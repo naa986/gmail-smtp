@@ -1,5 +1,4 @@
 # Gmail SMTP
-Connect to Gmail SMTP server to automatically send email from your WordPress site. Configure wp_mail() to use SMTP with OAuth 2.0 authentication.
 
 [Gmail SMTP](https://wphowto.net/gmail-smtp-plugin-for-wordpress-1341) is a WordPress plugin that allows you to authenticate with your Gmail account to send email via Gmail SMTP server.
 
