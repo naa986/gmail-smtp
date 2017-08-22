@@ -1,6 +1,6 @@
 # Gmail SMTP
 
-[Gmail SMTP](https://wphowto.net/gmail-smtp-plugin-for-wordpress-1341) is a WordPress plugin that allows you to authenticate with your Gmail account to send email via Gmail SMTP server.
+[Gmail SMTP](https://wordpress.org/plugins/gmail-smtp/) is a WordPress plugin that allows you to authenticate with your Gmail account to send email via Gmail SMTP server.
 
 Most shared hosting servers have restrictions when it comes to email. Usually email will get blocked or missing for no reason. Sometimes it will get blocked when your website reaches the daily limit of outgoing email. This plugin can bypass this issue by routing the email through Gmail's SMTP server.
 
