@@ -33,6 +33,11 @@ class GMAIL_SMTP {
     }
 
     function plugin_includes() {
+        //Google API client library was too big to push to wordpress.org. I had to make it lightweight by keeping only the essential files
+        //Open src/Google/Client.php and check which classes are in use from the /vendor directory.
+        //In addition to the ones in use I had to keep composer and phpseclib as well to avoid a fatal error (and remove everything else).
+        //vendor/google/apiclient-services/src/Google/Service was taking too much space. The plugin only needed to keep the "Gmail.php" file in it.
+        //do a cleanup in both the PHPMailer & Google API Client folders to remove all the git related unnecessary files.
         include_once('google-api-php-client/vendor/autoload.php');
         include_once('PHPMailer/PHPMailerAutoload.php');
         include_once('class.phpmaileroauthgoogle.php');
