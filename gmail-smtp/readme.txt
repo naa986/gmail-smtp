@@ -4,7 +4,7 @@ Donate link: https://wphowto.net/
 Tags: smtp, gmail, mail, mailer, phpmailer, wp_mail, email, oauth2
 Requires at least: 4.7
 Tested up to: 4.8
-Stable tag: 1.1.2
+Stable tag: 1.1.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -15,6 +15,12 @@ Connect to Gmail SMTP server to automatically send email from your WordPress sit
 [Gmail SMTP](https://wphowto.net/gmail-smtp-plugin-for-wordpress-1341) plugin allows you to authenticate with your Gmail account to send email via Gmail SMTP server.
 
 Most shared hosting servers have restrictions when it comes to email. Usually email will get blocked or missing for no reason. Sometimes it will get blocked when your website reaches the daily limit of outgoing email. This plugin can bypass this issue by routing the email through Gmail's SMTP server.
+
+= Requirements =
+
+* PHP 5.4 or later
+* A Gmail Account
+* A self-hosted WordPress site
 
 = Gmail SMTP Benefits =
 
@@ -76,12 +82,6 @@ Once you have configured the settings you can send a test email to check the fun
 
 For detailed setup instructions please visit the [Gmail SMTP](https://wphowto.net/gmail-smtp-plugin-for-wordpress-1341) plugin page.
 
-= Requirements =
-
-* PHP 5.4 or later
-* A Gmail Account
-* A self-hosted WordPress site
-
 == Installation ==
 
 1. Go to the Add New plugins screen in your WordPress Dashboard
@@ -107,6 +107,10 @@ For screenshots please visit the [Gmail SMTP](https://wphowto.net/gmail-smtp-plu
 none
 
 == Changelog ==
+
+= 1.1.3 =
+* Updated the Google API Client library to version 2.2.0.
+* Updated the PHPMailer library to version 5.2.24. This release contains a security fix for XSS vulnerability CVE-2017-11503.
 
 = 1.1.2 =
 * Removed the "Basic Setup Instructions" section from the settings page. Full setup instructions are now available on the documentation page.

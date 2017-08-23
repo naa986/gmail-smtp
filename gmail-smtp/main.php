@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: Gmail SMTP
-Version: 1.1.2
+Version: 1.1.3
 Plugin URI: http://wphowto.net/
 Author: naa986
 Author URI: http://wphowto.net/
@@ -16,8 +16,9 @@ if (!defined('ABSPATH')){
 
 class GMAIL_SMTP {
     
-    var $plugin_version = '1.1.2';
-    var $phpmailer_version = '5.2.22';
+    var $plugin_version = '1.1.3';
+    var $phpmailer_version = '5.2.24';
+    var $google_api_client_version = '2.2.0';
     var $plugin_url;
     var $plugin_path;
     
@@ -32,7 +33,7 @@ class GMAIL_SMTP {
     }
 
     function plugin_includes() {
-        include_once('google-api-php-client/src/Google/autoload.php');
+        include_once('google-api-php-client/vendor/autoload.php');
         include_once('PHPMailer/PHPMailerAutoload.php');
         include_once('class.phpmaileroauthgoogle.php');
         include_once('class.phpmaileroauth.php');

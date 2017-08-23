@@ -74,7 +74,7 @@ class GmailXOAuth2 {
 
             $new_accessToken = $client->getAccessToken();
 
-            $options['oauth_access_token'] = $new_accessToken;
+            $options['oauth_access_token'] = json_encode($new_accessToken); //json_encode the token since getAccessToken() no longer encodes it
             
             gmail_smtp_update_option($options);
             
@@ -101,9 +101,10 @@ class GmailXOAuth2 {
         $options = gmail_smtp_get_option();
         
         if(!empty($accessToken)) {
-            $options['oauth_access_token'] = $accessToken;
+            //json_encode the token since authenticate() function returns it as an array now. It used to call getAccessToken() before which would return in json_encoded format.
+            $options['oauth_access_token'] = json_encode($accessToken); 
             gmail_smtp_update_option($options);
-            return json_decode( $accessToken, true );
+            return $accessToken;
 
         }
 
@@ -143,7 +144,7 @@ class GmailXOAuth2 {
 
             $accessToken = $client->getAccessToken();
 
-            $options['oauth_access_token'] = $accessToken;
+            $options['oauth_access_token'] = json_encode($accessToken); //json_encode the token since getAccessToken() no longer encodes it
             gmail_smtp_update_option($options);
 
         }
