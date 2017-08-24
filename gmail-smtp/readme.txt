@@ -4,7 +4,7 @@ Donate link: https://wphowto.net/
 Tags: smtp, gmail, mail, mailer, phpmailer, wp_mail, email, oauth2
 Requires at least: 4.7
 Tested up to: 4.8
-Stable tag: 1.1.3
+Stable tag: 1.1.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -107,6 +107,9 @@ For screenshots please visit the [Gmail SMTP](https://wphowto.net/gmail-smtp-plu
 none
 
 == Changelog ==
+
+= 1.1.4 =
+* Made some changes to only include the Google API Client library and PHPMailer when needed.
 
 = 1.1.3 =
 * Updated the Google API Client library to version 2.2.0.

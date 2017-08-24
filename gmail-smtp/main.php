@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: Gmail SMTP
-Version: 1.1.3
+Version: 1.1.4
 Plugin URI: http://wphowto.net/
 Author: naa986
 Author URI: http://wphowto.net/
@@ -16,7 +16,7 @@ if (!defined('ABSPATH')){
 
 class GMAIL_SMTP {
     
-    var $plugin_version = '1.1.3';
+    var $plugin_version = '1.1.4';
     var $phpmailer_version = '5.2.24';
     var $google_api_client_version = '2.2.0';
     var $plugin_url;
@@ -38,10 +38,12 @@ class GMAIL_SMTP {
         //In addition to the ones in use I had to keep composer and phpseclib as well to avoid a fatal error (and remove everything else).
         //vendor/google/apiclient-services/src/Google/Service was taking too much space. The plugin only needed to keep the "Gmail.php" file in it.
         //do a cleanup in both the PHPMailer & Google API Client folders to remove all the git related unnecessary files.
+        /* Only include these scripts when needed to avoid conflicts with other plugins that are using Google API Client
         include_once('google-api-php-client/vendor/autoload.php');
         include_once('PHPMailer/PHPMailerAutoload.php');
         include_once('class.phpmaileroauthgoogle.php');
         include_once('class.phpmaileroauth.php');
+         */
     }
 
     function loader_operations() {
@@ -133,6 +135,10 @@ class GMAIL_SMTP {
     function plugin_init(){
         if(is_admin()){
             if(isset($_GET['action']) && $_GET['action'] == "oauth_grant"){
+                include_once('google-api-php-client/vendor/autoload.php');
+                include_once('PHPMailer/PHPMailerAutoload.php');
+                include_once('class.phpmaileroauthgoogle.php');
+                include_once('class.phpmaileroauth.php');
                 if (isset($_GET['code'])) {
                     $authCode = $_GET['code'];
                     $accessToken = GmailXOAuth2::resetCredentials($authCode);
@@ -605,6 +611,11 @@ if(!function_exists('wp_mail') && is_gmail_smtp_configured()){
                     $attachments = explode( "\n", str_replace( "\r\n", "\n", $attachments ) );
             }
 
+            include_once('google-api-php-client/vendor/autoload.php');
+            include_once('PHPMailer/PHPMailerAutoload.php');
+            include_once('class.phpmaileroauthgoogle.php');
+            include_once('class.phpmaileroauth.php');
+            
             $options = gmail_smtp_get_option();
 
             $phpmailer = new PHPMailerOAuth; /* this must be the custom class we created */
