@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: Gmail SMTP
-Version: 1.1.4
+Version: 1.1.5
 Plugin URI: http://wphowto.net/
 Author: naa986
 Author URI: http://wphowto.net/
@@ -16,7 +16,7 @@ if (!defined('ABSPATH')){
 
 class GMAIL_SMTP {
     
-    var $plugin_version = '1.1.4';
+    var $plugin_version = '1.1.5';
     var $phpmailer_version = '5.2.24';
     var $google_api_client_version = '2.2.0';
     var $plugin_url;
@@ -535,6 +535,13 @@ function gmail_smtp_admin_notice() {
         ?>
         <div class="error">
             <p><?php _e('Gmail SMTP plugin cannot send email until you enter your credentials in the settings and grant access to your web application.', 'gmail-smtp'); ?></p>
+        </div>
+        <?php
+    }
+    if(version_compare(PHP_VERSION, '5.6', '<')){
+        ?>
+        <div class="error">
+            <p><?php _e('Gmail SMTP plugin requires PHP 5.6 or higher. Please contact your web host to update your PHP version.', 'gmail-smtp'); ?></p>
         </div>
         <?php
     }

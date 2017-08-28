@@ -4,7 +4,7 @@ Donate link: https://wphowto.net/
 Tags: smtp, gmail, mail, mailer, phpmailer, wp_mail, email, oauth2
 Requires at least: 4.7
 Tested up to: 4.8
-Stable tag: 1.1.4
+Stable tag: 1.1.5
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -18,7 +18,7 @@ Most shared hosting servers have restrictions when it comes to email. Usually em
 
 = Requirements =
 
-* PHP 5.4 or later
+* PHP 5.6 or later
 * A Gmail Account
 * A self-hosted WordPress site
 
@@ -107,6 +107,9 @@ For screenshots please visit the [Gmail SMTP](https://wphowto.net/gmail-smtp-plu
 none
 
 == Changelog ==
+
+= 1.1.5 =
+* Updated the minimum requirements for PHP to 5.6 since it was causing a curl_reset() error in the Google API Client library.
 
 = 1.1.4 =
 * Made some changes to only include the Google API Client library and PHPMailer when needed.
