@@ -6,7 +6,7 @@ Most shared hosting servers have restrictions when it comes to email. Usually em
 
 ## Requirements
 
-* PHP 5.4 or later
+* PHP 5.6 or later
 * A Gmail Account
 * A self-hosted WordPress site
 
