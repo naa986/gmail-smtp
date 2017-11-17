@@ -1,8 +1,9 @@
 <?php
+/*
 define ( 'SCOPES', implode ( ' ', array (
         \Google_Service_Gmail::GMAIL_COMPOSE 
 ) ) );
-
+*/
 class GmailXOAuth2 {
 
     private $oauthUserEmail = '';

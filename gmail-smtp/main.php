@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: Gmail SMTP
-Version: 1.1.5
+Version: 1.1.6
 Plugin URI: http://wphowto.net/
 Author: naa986
 Author URI: http://wphowto.net/
@@ -16,8 +16,8 @@ if (!defined('ABSPATH')){
 
 class GMAIL_SMTP {
     
-    var $plugin_version = '1.1.5';
-    var $phpmailer_version = '5.2.24';
+    var $plugin_version = '1.1.6';
+    var $phpmailer_version = '5.2.26';
     var $google_api_client_version = '2.2.0';
     var $plugin_url;
     var $plugin_path;
@@ -93,7 +93,7 @@ class GMAIL_SMTP {
         );
         $url = "http://wphowto.net/gmail-smtp-plugin-for-wordpress-1341";
         $link_text = sprintf(wp_kses(__('Please visit the <a target="_blank" href="%s">Gmail SMTP</a> documentation page for usage instructions.', 'gmail-smtp'), array('a' => array('href' => array(), 'target' => array()))), esc_url($url));
-        echo '<div class="wrap">' . screen_icon() . '<h2>Gmail SMTP v' . GMAIL_SMTP_VERSION . '</h2>';
+        echo '<div class="wrap"><h2>Gmail SMTP v' . GMAIL_SMTP_VERSION . '</h2>';
         echo '<div class="update-nag">'.$link_text.'</div>';
         echo '<div id="poststuff"><div id="post-body">';
 
@@ -598,6 +598,10 @@ if(!function_exists('wp_mail') && is_gmail_smtp_configured()){
                     $to = $atts['to'];
             }
 
+            if ( !is_array( $to ) ) {
+                    $to = explode( ',', $to );
+            }
+
             if ( isset( $atts['subject'] ) ) {
                     $subject = $atts['subject'];
             }
@@ -694,8 +698,6 @@ if(!function_exists('wp_mail') && is_gmail_smtp_configured()){
                             $tempheaders = $headers;
                     }
                     $headers = array();
-                    $cc = array();
-                    $bcc = array();
 
                     // If it's actually got contents
                     if ( !empty( $tempheaders ) ) {
@@ -758,6 +760,9 @@ if(!function_exists('wp_mail') && is_gmail_smtp_configured()){
                                             case 'bcc':
                                                     $bcc = array_merge( (array) $bcc, explode( ',', $content ) );
                                                     break;
+                                            case 'reply-to':
+                                                    $reply_to = array_merge( (array) $reply_to, explode( ',', $content ) );
+                                                    break;
                                             default:
                                                     // Add it to our grand headers array
                                                     $headers[trim( $name )] = trim( $content );
@@ -768,10 +773,10 @@ if(!function_exists('wp_mail') && is_gmail_smtp_configured()){
             }
 
             // Empty out the values that may be set
-            $phpmailer->ClearAllRecipients();
-            $phpmailer->ClearAttachments();
-            $phpmailer->ClearCustomHeaders();
-            $phpmailer->ClearReplyTos();
+            $phpmailer->clearAllRecipients();
+            $phpmailer->clearAttachments();
+            $phpmailer->clearCustomHeaders();
+            $phpmailer->clearReplyTos();
 
             // From email and name
             // If we don't have a name from the input headers
@@ -796,81 +801,76 @@ if(!function_exists('wp_mail') && is_gmail_smtp_configured()){
             }
 
             /**
-             * Filter the email address to send from.
+             * Filters the email address to send from.
              *
              * @since 2.2.0
              *
              * @param string $from_email Email address to send from.
              */
-            $phpmailer->From = apply_filters( 'wp_mail_from', $from_email );
+            $from_email = apply_filters( 'wp_mail_from', $from_email );
 
             /**
-             * Filter the name to associate with the "from" email address.
+	     * Filters the name to associate with the "from" email address.
              *
              * @since 2.3.0
              *
              * @param string $from_name Name associated with the "from" email address.
              */
-            $phpmailer->FromName = apply_filters( 'wp_mail_from_name', $from_name );
+            $from_name = apply_filters( 'wp_mail_from_name', $from_name );
 
-            // Set destination addresses
-            if ( !is_array( $to ) )
-                    $to = explode( ',', $to );
+            try {
+                $phpmailer->setFrom( $from_email, $from_name, false );
+            } catch ( phpmailerException $e ) {
+		$mail_error_data = compact( 'to', 'subject', 'message', 'headers', 'attachments' );
+		$mail_error_data['phpmailer_exception_code'] = $e->getCode();
 
-            foreach ( (array) $to as $recipient ) {
-                    try {
-                            // Break $recipient into name and address parts if in the format "Foo <bar@baz.com>"
-                            $recipient_name = '';
-                            if ( preg_match( '/(.*)<(.+)>/', $recipient, $matches ) ) {
-                                    if ( count( $matches ) == 3 ) {
-                                            $recipient_name = $matches[1];
-                                            $recipient = $matches[2];
-                                    }
-                            }
-                            $phpmailer->AddAddress( $recipient, $recipient_name);
-                    } catch ( phpmailerException $e ) {
-                            continue;
-                    }
+		/** This filter is documented in wp-includes/pluggable.php */
+		do_action( 'wp_mail_failed', new WP_Error( 'wp_mail_failed', $e->getMessage(), $mail_error_data ) );
+
+		return false;
             }
 
             // Set mail's subject and body
             $phpmailer->Subject = $subject;
             $phpmailer->Body    = $message;
 
-            // Add any CC and BCC recipients
-            if ( !empty( $cc ) ) {
-                    foreach ( (array) $cc as $recipient ) {
-                            try {
-                                    // Break $recipient into name and address parts if in the format "Foo <bar@baz.com>"
-                                    $recipient_name = '';
-                                    if ( preg_match( '/(.*)<(.+)>/', $recipient, $matches ) ) {
-                                            if ( count( $matches ) == 3 ) {
-                                                    $recipient_name = $matches[1];
-                                                    $recipient = $matches[2];
-                                            }
-                                    }
-                                    $phpmailer->AddCc( $recipient, $recipient_name );
-                            } catch ( phpmailerException $e ) {
-                                    continue;
-                            }
-                    }
-            }
+	// Set destination addresses, using appropriate methods for handling addresses
+	$address_headers = compact( 'to', 'cc', 'bcc', 'reply_to' );
 
-            if ( !empty( $bcc ) ) {
-                    foreach ( (array) $bcc as $recipient) {
-                            try {
-                                    // Break $recipient into name and address parts if in the format "Foo <bar@baz.com>"
-                                    $recipient_name = '';
-                                    if ( preg_match( '/(.*)<(.+)>/', $recipient, $matches ) ) {
-                                            if ( count( $matches ) == 3 ) {
-                                                    $recipient_name = $matches[1];
-                                                    $recipient = $matches[2];
-                                            }
+	foreach ( $address_headers as $address_header => $addresses ) {
+		if ( empty( $addresses ) ) {
+                        continue;
+                }
+
+		foreach ( (array) $addresses as $address ) {
+                        try {
+                                // Break $recipient into name and address parts if in the format "Foo <bar@baz.com>"
+                                $recipient_name = '';
+
+                            if ( preg_match( '/(.*)<(.+)>/', $address, $matches ) ) {
+                                    if ( count( $matches ) == 3 ) {
+                                            $recipient_name = $matches[1];
+                                        $address        = $matches[2];
                                     }
-                                    $phpmailer->AddBcc( $recipient, $recipient_name );
-                            } catch ( phpmailerException $e ) {
-                                    continue;
                             }
+
+                            switch ( $address_header ) {
+                                    case 'to':
+                                            $phpmailer->addAddress( $address, $recipient_name );
+                                            break;
+                                    case 'cc':
+                                            $phpmailer->addCc( $address, $recipient_name );
+                                            break;
+                                    case 'bcc':
+                                            $phpmailer->addBcc( $address, $recipient_name );
+                                            break;
+                                    case 'reply_to':
+                                            $phpmailer->addReplyTo( $address, $recipient_name );
+                                            break;
+                            }
+                        } catch ( phpmailerException $e ) {
+                                continue;
+                        }
                     }
             }
 
@@ -880,7 +880,7 @@ if(!function_exists('wp_mail') && is_gmail_smtp_configured()){
                     $content_type = 'text/plain';
 
             /**
-             * Filter the wp_mail() content type.
+	     * Filters the wp_mail() content type.
              *
              * @since 2.3.0
              *
@@ -892,7 +892,7 @@ if(!function_exists('wp_mail') && is_gmail_smtp_configured()){
 
             // Set whether it's plaintext, depending on $content_type
             if ( 'text/html' == $content_type )
-                    $phpmailer->IsHTML( true );
+                    $phpmailer->isHTML( true );
 
             // If we don't have a charset from the input headers
             if ( !isset( $charset ) )
@@ -901,7 +901,7 @@ if(!function_exists('wp_mail') && is_gmail_smtp_configured()){
             // Set the content-type and charset
 
             /**
-             * Filter the default wp_mail() charset.
+	     * Filters the default wp_mail() charset.
              *
              * @since 2.3.0
              *
@@ -911,18 +911,18 @@ if(!function_exists('wp_mail') && is_gmail_smtp_configured()){
 
             // Set custom headers
             if ( !empty( $headers ) ) {
-                    foreach( (array) $headers as $name => $content ) {
-                            $phpmailer->AddCustomHeader( sprintf( '%1$s: %2$s', $name, $content ) );
+		foreach ( (array) $headers as $name => $content ) {
+                        $phpmailer->addCustomHeader( sprintf( '%1$s: %2$s', $name, $content ) );
                     }
 
                     if ( false !== stripos( $content_type, 'multipart' ) && ! empty($boundary) )
-                            $phpmailer->AddCustomHeader( sprintf( "Content-Type: %s;\n\t boundary=\"%s\"", $content_type, $boundary ) );
+			$phpmailer->addCustomHeader( sprintf( "Content-Type: %s;\n\t boundary=\"%s\"", $content_type, $boundary ) );
             }
 
             if ( !empty( $attachments ) ) {
                     foreach ( $attachments as $attachment ) {
                             try {
-                                    $phpmailer->AddAttachment($attachment);
+                                    $phpmailer->addAttachment($attachment);
                             } catch ( phpmailerException $e ) {
                                     continue;
                             }
@@ -934,13 +934,13 @@ if(!function_exists('wp_mail') && is_gmail_smtp_configured()){
              *
              * @since 2.2.0
              *
-             * @param PHPMailer &$phpmailer The PHPMailer instance, passed by reference.
+	     * @param PHPMailer $phpmailer The PHPMailer instance (passed by reference).
              */
-            //do_action_ref_array( 'phpmailer_init', array( &$phpmailer ) );
+            do_action_ref_array( 'phpmailer_init', array( &$phpmailer ) );
 
             // Send!
             try {
-                    return $phpmailer->Send();
+                    return $phpmailer->send();
             } catch ( phpmailerException $e ) {
 
                     $mail_error_data = compact( 'to', 'subject', 'message', 'headers', 'attachments' );
