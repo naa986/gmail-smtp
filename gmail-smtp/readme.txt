@@ -21,7 +21,7 @@ Most shared hosting servers have restrictions when it comes to email. Usually em
 
 * PHP 5.6 or later
 * A Gmail Account
-* A self-hosted WordPress site
+* A self-hosted website running on [WordPress hosting](https://wphowto.net/best-cheap-wordpress-hosting-1689)
 
 = Gmail SMTP Benefits =
 
