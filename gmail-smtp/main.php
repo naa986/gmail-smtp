@@ -2,9 +2,9 @@
 /*
 Plugin Name: Gmail SMTP
 Version: 1.1.6
-Plugin URI: http://wphowto.net/
+Plugin URI: https://wphowto.net/gmail-smtp-plugin-for-wordpress-1341
 Author: naa986
-Author URI: http://wphowto.net/
+Author URI: https://wphowto.net/
 Description: Easily send email from your WordPress site via Gmail SMTP server
 Text Domain: gmail-smtp
 Domain Path: /languages 
@@ -91,7 +91,7 @@ class GMAIL_SMTP {
             'gmail-smtp-settings&action=revoke-access' => __('Revoke Access', 'gmail-smtp'),
             'gmail-smtp-settings&action=server-info' => __('Server Info', 'gmail-smtp'),
         );
-        $url = "http://wphowto.net/gmail-smtp-plugin-for-wordpress-1341";
+        $url = "https://wphowto.net/gmail-smtp-plugin-for-wordpress-1341";
         $link_text = sprintf(wp_kses(__('Please visit the <a target="_blank" href="%s">Gmail SMTP</a> documentation page for usage instructions.', 'gmail-smtp'), array('a' => array('href' => array(), 'target' => array()))), esc_url($url));
         echo '<div class="wrap"><h2>Gmail SMTP v' . GMAIL_SMTP_VERSION . '</h2>';
         echo '<div class="update-nag">'.$link_text.'</div>';
