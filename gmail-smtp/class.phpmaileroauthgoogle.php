@@ -102,6 +102,12 @@ class GmailXOAuth2 {
         $options = gmail_smtp_get_option();
         
         if(!empty($accessToken)) {
+            if(isset($accessToken['error']) || isset($accessToken['error_description'])){
+                echo '<div id="message" class="error"><p><strong>';
+                echo __('Error: '.$accessToken['error'].', Error Description: '.$accessToken['error_description'], 'gmail-smtp');
+                echo '</strong></p></div>';
+                return false;
+            }
             //json_encode the token since authenticate() function returns it as an array now. It used to call getAccessToken() before which would return in json_encoded format.
             $options['oauth_access_token'] = json_encode($accessToken); 
             gmail_smtp_update_option($options);

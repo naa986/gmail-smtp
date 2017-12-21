@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: Gmail SMTP
-Version: 1.1.6
+Version: 1.1.7
 Plugin URI: https://wphowto.net/gmail-smtp-plugin-for-wordpress-1341
 Author: naa986
 Author URI: https://wphowto.net/
@@ -16,7 +16,7 @@ if (!defined('ABSPATH')){
 
 class GMAIL_SMTP {
     
-    var $plugin_version = '1.1.6';
+    var $plugin_version = '1.1.7';
     var $phpmailer_version = '5.2.26';
     var $google_api_client_version = '2.2.0';
     var $plugin_url;
