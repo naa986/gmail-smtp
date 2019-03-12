@@ -5,7 +5,7 @@ Tags: smtp, gmail, mail, mailer, phpmailer, wp_mail, email, oauth2
 Requires at least: 4.7
 Tested up to: 5.1
 Requires PHP: 5.6
-Stable tag: 1.1.7
+Stable tag: 1.1.8
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -110,6 +110,9 @@ For screenshots please visit the [Gmail SMTP](https://wphowto.net/gmail-smtp-plu
 none
 
 == Changelog ==
+
+= 1.1.8 =
+* Fixed this warning that is shown on servers running on PHP 7.2 or higher: PHP Deprecated: __autoload() is deprecated, use spl_autoload_register() instead in /wp-content/plugins/gmail-smtp/PHPMailer/PHPMailerAutoload.php on line 45
 
 = 1.1.7 =
 * Added some error handling code after the authorized redirection step. This is to make sure that the plugin doesn't save the error if an error occurs and no access token is returned.
