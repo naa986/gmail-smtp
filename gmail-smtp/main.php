@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: Gmail SMTP
-Version: 1.1.8
+Version: 1.1.9
 Plugin URI: https://wphowto.net/gmail-smtp-plugin-for-wordpress-1341
 Author: naa986
 Author URI: https://wphowto.net/
@@ -16,7 +16,7 @@ if (!defined('ABSPATH')){
 
 class GMAIL_SMTP {
     
-    var $plugin_version = '1.1.8';
+    var $plugin_version = '1.1.9';
     var $phpmailer_version = '5.2.26';
     var $google_api_client_version = '2.2.0';
     var $plugin_url;
@@ -598,7 +598,7 @@ if(!function_exists('wp_mail') && is_gmail_smtp_configured()){
                     $to = $atts['to'];
             }
 
-            if ( !is_array( $to ) ) {
+            if ( ! is_array( $to ) ) {
                     $to = explode( ',', $to );
             }
 
@@ -685,12 +685,14 @@ if(!function_exists('wp_mail') && is_gmail_smtp_configured()){
             $phpmailer->oauthRefreshToken = $gmail_token['refresh_token'];
 
             // Headers
-            $cc = $bcc = $reply_to = array();
+            $cc       = array();
+            $bcc      = array();
+            $reply_to = array();
 
             if ( empty( $headers ) ) {
                     $headers = array();
             } else {
-                    if ( !is_array( $headers ) ) {
+                    if ( ! is_array( $headers ) ) {
                             // Explode the headers out, so this function can take both
                             // string headers and an array of headers.
                             $tempheaders = explode( "\n", str_replace( "\r\n", "\n", $headers ) );
@@ -700,12 +702,12 @@ if(!function_exists('wp_mail') && is_gmail_smtp_configured()){
                     $headers = array();
 
                     // If it's actually got contents
-                    if ( !empty( $tempheaders ) ) {
+                    if ( ! empty( $tempheaders ) ) {
                             // Iterate through the raw headers
                             foreach ( (array) $tempheaders as $header ) {
-                                    if ( strpos($header, ':') === false ) {
+                                    if ( strpos( $header, ':' ) === false ) {
                                             if ( false !== stripos( $header, 'boundary=' ) ) {
-                                                    $parts = preg_split('/boundary=/i', trim( $header ) );
+                                                    $parts    = preg_split( '/boundary=/i', trim( $header ) );
                                                     $boundary = trim( str_replace( array( "'", '"' ), '', $parts[1] ) );
                                             }
                                             continue;
@@ -714,7 +716,7 @@ if(!function_exists('wp_mail') && is_gmail_smtp_configured()){
                                     list( $name, $content ) = explode( ':', trim( $header ), 2 );
 
                                     // Cleanup crew
-                                    $name    = trim( $name    );
+                                    $name    = trim( $name );
                                     $content = trim( $content );
 
                                     switch ( strtolower( $name ) ) {
@@ -741,12 +743,12 @@ if(!function_exists('wp_mail') && is_gmail_smtp_configured()){
                                             case 'content-type':
                                                     if ( strpos( $content, ';' ) !== false ) {
                                                             list( $type, $charset_content ) = explode( ';', $content );
-                                                            $content_type = trim( $type );
+                                                            $content_type                   = trim( $type );
                                                             if ( false !== stripos( $charset_content, 'charset=' ) ) {
                                                                     $charset = trim( str_replace( array( 'charset=', '"' ), '', $charset_content ) );
                                                             } elseif ( false !== stripos( $charset_content, 'boundary=' ) ) {
                                                                     $boundary = trim( str_replace( array( 'BOUNDARY=', 'boundary=', '"' ), '', $charset_content ) );
-                                                                    $charset = '';
+                                                                    $charset  = '';
                                                             }
 
                                                     // Avoid setting an empty $content_type.
@@ -765,7 +767,7 @@ if(!function_exists('wp_mail') && is_gmail_smtp_configured()){
                                                     break;
                                             default:
                                                     // Add it to our grand headers array
-                                                    $headers[trim( $name )] = trim( $content );
+                                                    $headers[ trim( $name ) ] = trim( $content );
                                                     break;
                                     }
                             }
@@ -780,9 +782,10 @@ if(!function_exists('wp_mail') && is_gmail_smtp_configured()){
 
             // From email and name
             // If we don't have a name from the input headers
-            if ( !isset( $from_name ) ){
+            if ( ! isset( $from_name ) ) {
                     $from_name = $options['from_name'];//'WordPress';
             }
+
             /* If we don't have an email from the input headers default to wordpress@$sitename
              * Some hosts will block outgoing mail from this address if it doesn't exist but
              * there's no easy alternative. Defaulting to admin_email might appear to be another
@@ -790,7 +793,7 @@ if(!function_exists('wp_mail') && is_gmail_smtp_configured()){
              * https://core.trac.wordpress.org/ticket/5007.
              */
 
-            if ( !isset( $from_email ) ) {
+            if ( ! isset( $from_email ) ) {
                     // Get the site domain and get rid of www.
                     $sitename = strtolower( $_SERVER['SERVER_NAME'] );
                     if ( substr( $sitename, 0, 4 ) == 'www.' ) {
@@ -821,7 +824,7 @@ if(!function_exists('wp_mail') && is_gmail_smtp_configured()){
             try {
                 $phpmailer->setFrom( $from_email, $from_name, false );
             } catch ( phpmailerException $e ) {
-		$mail_error_data = compact( 'to', 'subject', 'message', 'headers', 'attachments' );
+		$mail_error_data                             = compact( 'to', 'subject', 'message', 'headers', 'attachments' );
 		$mail_error_data['phpmailer_exception_code'] = $e->getCode();
 
 		/** This filter is documented in wp-includes/pluggable.php */
@@ -876,8 +879,9 @@ if(!function_exists('wp_mail') && is_gmail_smtp_configured()){
 
             // Set Content-Type and charset
             // If we don't have a content-type from the input headers
-            if ( !isset( $content_type ) )
+            if ( ! isset( $content_type ) ) {
                     $content_type = 'text/plain';
+            }
 
             /**
 	     * Filters the wp_mail() content type.
@@ -891,12 +895,14 @@ if(!function_exists('wp_mail') && is_gmail_smtp_configured()){
             $phpmailer->ContentType = $content_type;
 
             // Set whether it's plaintext, depending on $content_type
-            if ( 'text/html' == $content_type )
+            if ( 'text/html' == $content_type ) {
                     $phpmailer->isHTML( true );
+            }
 
             // If we don't have a charset from the input headers
-            if ( !isset( $charset ) )
+            if ( ! isset( $charset ) ) {
                     $charset = get_bloginfo( 'charset' );
+            }
 
             // Set the content-type and charset
 
@@ -909,20 +915,24 @@ if(!function_exists('wp_mail') && is_gmail_smtp_configured()){
              */
             $phpmailer->CharSet = apply_filters( 'wp_mail_charset', $charset );
 
-            // Set custom headers
-            if ( !empty( $headers ) ) {
-		foreach ( (array) $headers as $name => $content ) {
-                        $phpmailer->addCustomHeader( sprintf( '%1$s: %2$s', $name, $content ) );
+            // Set custom headers.
+            if ( ! empty( $headers ) ) {
+                    foreach ( (array) $headers as $name => $content ) {
+                            // Only add custom headers not added automatically by PHPMailer.
+                            if ( ! in_array( $name, array( 'MIME-Version', 'X-Mailer' ) ) ) {
+                                    $phpmailer->addCustomHeader( sprintf( '%1$s: %2$s', $name, $content ) );
+                            }
                     }
 
-                    if ( false !== stripos( $content_type, 'multipart' ) && ! empty($boundary) )
-			$phpmailer->addCustomHeader( sprintf( "Content-Type: %s;\n\t boundary=\"%s\"", $content_type, $boundary ) );
+                    if ( false !== stripos( $content_type, 'multipart' ) && ! empty( $boundary ) ) {
+                            $phpmailer->addCustomHeader( sprintf( "Content-Type: %s;\n\t boundary=\"%s\"", $content_type, $boundary ) );
+                    }
             }
 
-            if ( !empty( $attachments ) ) {
+            if ( ! empty( $attachments ) ) {
                     foreach ( $attachments as $attachment ) {
                             try {
-                                    $phpmailer->addAttachment($attachment);
+                                    $phpmailer->addAttachment( $attachment );
                             } catch ( phpmailerException $e ) {
                                     continue;
                             }
@@ -943,7 +953,7 @@ if(!function_exists('wp_mail') && is_gmail_smtp_configured()){
                     return $phpmailer->send();
             } catch ( phpmailerException $e ) {
 
-                    $mail_error_data = compact( 'to', 'subject', 'message', 'headers', 'attachments' );
+                    $mail_error_data                             = compact( 'to', 'subject', 'message', 'headers', 'attachments' );
                     $mail_error_data['phpmailer_exception_code'] = $e->getCode();
 
                     /**
