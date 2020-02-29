@@ -1,4 +1,4 @@
-=== Gmail SMTP ===
+=== WP Gmail SMTP ===
 Contributors: naa986
 Donate link: https://wphowto.net/
 Tags: smtp, gmail, mail, mailer, phpmailer, wp_mail, email, oauth2
