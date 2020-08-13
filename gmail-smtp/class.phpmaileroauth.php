@@ -1,5 +1,5 @@
 <?php
-class PHPMailerOAuth extends \PHPMailer {
+class PHPMailerOAuth extends \PHPMailer\PHPMailer\PHPMailer {
 
     /**
      * The OAuth user's email address
@@ -110,7 +110,7 @@ class PHPMailerOAuth extends \PHPMailer {
             if ('tls' === $secure or 'ssl' === $secure) {
                 //Check for an OpenSSL constant rather than using extension_loaded, which is sometimes disabled
                 if (!$sslext) {
-                    throw new \phpmailerException($this->lang('extension_missing').'openssl', self::STOP_CRITICAL);
+                    throw new \PHPMailer\PHPMailer\Exception($this->lang('extension_missing').'openssl', self::STOP_CRITICAL);
                 }
             }
             $host = $hostinfo[3];
@@ -137,7 +137,7 @@ class PHPMailerOAuth extends \PHPMailer {
                     }
                     if ($tls) {
                         if (!$this->smtp->startTLS()) {
-                            throw new \phpmailerException($this->lang('connect_host'));
+                            throw new \PHPMailer\PHPMailer\Exception($this->lang('connect_host'));
                         }
                         // We must resend HELO after tls negotiation
                         $this->smtp->hello($hello);
@@ -147,16 +147,14 @@ class PHPMailerOAuth extends \PHPMailer {
                             $this->Username,
                             $this->Password,
                             $this->AuthType,
-                            $this->Realm,
-                            $this->Workstation,
                             $this->oauth
                         )
                         ) {
-                            throw new \phpmailerException($this->lang('authenticate'));
+                            throw new \PHPMailer\PHPMailer\Exception($this->lang('authenticate'));
                         }
                     }
                     return true;
-                } catch (\phpmailerException $exc) {
+                } catch (\PHPMailer\PHPMailer\Exception $exc) {
                     $lastexception = $exc;
                     $this->edebug($exc->getMessage());
                     // We must have connected, but then failed TLS or Auth, so close connection nicely
