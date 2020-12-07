@@ -3,7 +3,7 @@ Contributors: naa986
 Donate link: https://wphowto.net/
 Tags: smtp, gmail, mail, email, oauth
 Requires at least: 5.5
-Tested up to: 5.5
+Tested up to: 5.6
 Requires PHP: 5.6
 Stable tag: 1.2.0
 License: GPLv2 or later
@@ -101,6 +101,22 @@ Yes.
 = Can this plugin use OAuth 2.0 to send email? =
 
 Yes.
+
+= Can I use this plugin for Gmail signup? =
+
+No.
+
+= Can I use this plugin on Gmail app? =
+
+No.
+
+= Can I use this plugin to access my Gmail inbox? =
+
+No.
+
+= Can I use this plugin to sign out of my Gmail account? =
+
+No.
 
 == Screenshots ==
 
