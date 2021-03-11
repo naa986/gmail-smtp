@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: Gmail SMTP
-Version: 1.2.0
+Version: 1.2.1
 Plugin URI: https://wphowto.net/gmail-smtp-plugin-for-wordpress-1341
 Author: naa986
 Author URI: https://wphowto.net/
@@ -16,8 +16,8 @@ if (!defined('ABSPATH')){
 
 class GMAIL_SMTP {
     
-    var $plugin_version = '1.2.0';
-    var $phpmailer_version = '6.1.6';
+    var $plugin_version = '1.2.1';
+    var $phpmailer_version = '6.3.0';
     var $google_api_client_version = '2.2.0';
     var $plugin_url;
     var $plugin_path;
@@ -54,6 +54,9 @@ class GMAIL_SMTP {
         add_action('admin_menu', array($this, 'options_menu'));
         add_action('init', array($this, 'plugin_init'));
         add_action('admin_notices', 'gmail_smtp_admin_notice');
+        if(is_gmail_smtp_configured()){
+            add_filter('pre_wp_mail', 'gmail_smtp_pre_wp_mail', 10, 2);
+        }
     }
     
     function plugins_loaded_handler()
@@ -579,401 +582,387 @@ function is_gmail_smtp_configured() {
 
 $GLOBALS['gmail-smtp'] = new GMAIL_SMTP();
 
-if(!function_exists('wp_mail') && is_gmail_smtp_configured()){
+function gmail_smtp_pre_wp_mail($null, $atts)
+{
+    if ( isset( $atts['to'] ) ) {
+            $to = $atts['to'];
+    }
+
+    if ( ! is_array( $to ) ) {
+            $to = explode( ',', $to );
+    }
+
+    if ( isset( $atts['subject'] ) ) {
+            $subject = $atts['subject'];
+    }
+
+    if ( isset( $atts['message'] ) ) {
+            $message = $atts['message'];
+    }
+
+    if ( isset( $atts['headers'] ) ) {
+            $headers = $atts['headers'];
+    }
+
+    if ( isset( $atts['attachments'] ) ) {
+            $attachments = $atts['attachments'];
+    }
+
+    if ( ! is_array( $attachments ) ) {
+            $attachments = explode( "\n", str_replace( "\r\n", "\n", $attachments ) );
+    }
     
-	function wp_mail( $to, $subject, $message, $headers = '', $attachments = array() ) {
-		// Compact the input, apply the filters, and extract them back out.
+    require_once ABSPATH . WPINC . '/PHPMailer/PHPMailer.php';
+    require_once ABSPATH . WPINC . '/PHPMailer/SMTP.php';
+    require_once ABSPATH . WPINC . '/PHPMailer/Exception.php';
+    include_once('google-api-php-client/vendor/autoload.php');
+    include_once('class.phpmaileroauthgoogle.php');
+    include_once('class.phpmaileroauth.php');
 
-		/**
-		 * Filters the wp_mail() arguments.
-		 *
-		 * @since 2.2.0
-		 *
-		 * @param array $args A compacted array of wp_mail() arguments, including the "to" email,
-		 *                    subject, message, headers, and attachments values.
-		 */
-		$atts = apply_filters( 'wp_mail', compact( 'to', 'subject', 'message', 'headers', 'attachments' ) );
+    $options = gmail_smtp_get_option();
 
-		if ( isset( $atts['to'] ) ) {
-			$to = $atts['to'];
-		}
+    $phpmailer = new PHPMailerOAuth; /* this must be the custom class we created */
 
-		if ( ! is_array( $to ) ) {
-			$to = explode( ',', $to );
-		}
+    // Tell PHPMailer to use SMTP
+    $phpmailer->isSMTP();
 
-		if ( isset( $atts['subject'] ) ) {
-			$subject = $atts['subject'];
-		}
+    // Set AuthType
+    $phpmailer->AuthType = 'XOAUTH2';
 
-		if ( isset( $atts['message'] ) ) {
-			$message = $atts['message'];
-		}
+    // Whether to use SMTP authentication
+    $phpmailer->SMTPAuth = true;
 
-		if ( isset( $atts['headers'] ) ) {
-			$headers = $atts['headers'];
-		}
+    // Set the encryption system to use - ssl (deprecated) or tls
+    $phpmailer->SMTPSecure = $options['type_of_encryption'];
 
-		if ( isset( $atts['attachments'] ) ) {
-			$attachments = $atts['attachments'];
-		}
+    // Set the hostname of the mail server
+    $phpmailer->Host = 'smtp.gmail.com';
 
-		if ( ! is_array( $attachments ) ) {
-			$attachments = explode( "\n", str_replace( "\r\n", "\n", $attachments ) );
-		}
-                
-                require_once ABSPATH . WPINC . '/PHPMailer/PHPMailer.php';
-                require_once ABSPATH . WPINC . '/PHPMailer/SMTP.php';
-                require_once ABSPATH . WPINC . '/PHPMailer/Exception.php';
-                include_once('google-api-php-client/vendor/autoload.php');
-                include_once('class.phpmaileroauthgoogle.php');
-                include_once('class.phpmaileroauth.php');
+    // Set the SMTP port number - 587 for authenticated TLS, a.k.a. RFC4409 SMTP submission
+    $phpmailer->Port = $options['smtp_port'];
 
-                $options = gmail_smtp_get_option();
-            
-		$phpmailer = new PHPMailerOAuth; /* this must be the custom class we created */
+    $phpmailer->SMTPAutoTLS = false;
 
-		// Tell PHPMailer to use SMTP
-                $phpmailer->isSMTP();
+    //enable debug when sending a test mail
+    if(isset($_POST['gmail_smtp_send_test_email'])){
+        $phpmailer->SMTPDebug = 4;
+        // Ask for HTML-friendly debug output
+        $phpmailer->Debugoutput = 'html';
+    }
 
-                // Set AuthType
-                $phpmailer->AuthType = 'XOAUTH2';
+    //disable ssl certificate verification if checked
+    if(isset($options['disable_ssl_verification']) && !empty($options['disable_ssl_verification'])){
+        $phpmailer->SMTPOptions = array(
+            'ssl' => array(
+                'verify_peer' => false,
+                'verify_peer_name' => false,
+                'allow_self_signed' => true
+            )
+        );
+    }
+    // User Email to use for SMTP authentication - Use the same Email used in Google Developer Console
+    $phpmailer->oauthUserEmail = $options['oauth_user_email'];
 
-                // Whether to use SMTP authentication
-                $phpmailer->SMTPAuth = true;
+    //Obtained From Google Developer Console
+    $phpmailer->oauthClientId = $options['oauth_client_id'];
 
-                // Set the encryption system to use - ssl (deprecated) or tls
-                $phpmailer->SMTPSecure = $options['type_of_encryption'];
+    //Obtained From Google Developer Console
+    $phpmailer->oauthClientSecret = $options['oauth_client_secret'];
 
-                // Set the hostname of the mail server
-                $phpmailer->Host = 'smtp.gmail.com';
+    $gmail_token = json_decode($options['oauth_access_token'], true);
 
-                // Set the SMTP port number - 587 for authenticated TLS, a.k.a. RFC4409 SMTP submission
-                $phpmailer->Port = $options['smtp_port'];
+    //Obtained By running get_oauth_token.php after setting up APP in Google Developer Console.
+    //Set Redirect URI in Developer Console as [https/http]://<yourdomain>/<folder>/get_oauth_token.php
+    // eg: http://localhost/phpmail/get_oauth_token.php
+    $phpmailer->oauthRefreshToken = $gmail_token['refresh_token'];    
 
-                $phpmailer->SMTPAutoTLS = false;
+    // Headers.
+    $cc       = array();
+    $bcc      = array();
+    $reply_to = array();
 
-                //enable debug when sending a test mail
-                if(isset($_POST['gmail_smtp_send_test_email'])){
-                    $phpmailer->SMTPDebug = 4;
-                    // Ask for HTML-friendly debug output
-                    $phpmailer->Debugoutput = 'html';
-                }
+    if ( empty( $headers ) ) {
+            $headers = array();
+    } else {
+            if ( ! is_array( $headers ) ) {
+                    // Explode the headers out, so this function can take
+                    // both string headers and an array of headers.
+                    $tempheaders = explode( "\n", str_replace( "\r\n", "\n", $headers ) );
+            } else {
+                    $tempheaders = $headers;
+            }
+            $headers = array();
 
-                //disable ssl certificate verification if checked
-                if(isset($options['disable_ssl_verification']) && !empty($options['disable_ssl_verification'])){
-                    $phpmailer->SMTPOptions = array(
-                        'ssl' => array(
-                            'verify_peer' => false,
-                            'verify_peer_name' => false,
-                            'allow_self_signed' => true
-                        )
-                    );
-                }
-                // User Email to use for SMTP authentication - Use the same Email used in Google Developer Console
-                $phpmailer->oauthUserEmail = $options['oauth_user_email'];
+            // If it's actually got contents.
+            if ( ! empty( $tempheaders ) ) {
+                    // Iterate through the raw headers.
+                    foreach ( (array) $tempheaders as $header ) {
+                            if ( strpos( $header, ':' ) === false ) {
+                                    if ( false !== stripos( $header, 'boundary=' ) ) {
+                                            $parts    = preg_split( '/boundary=/i', trim( $header ) );
+                                            $boundary = trim( str_replace( array( "'", '"' ), '', $parts[1] ) );
+                                    }
+                                    continue;
+                            }
+                            // Explode them out.
+                            list( $name, $content ) = explode( ':', trim( $header ), 2 );
 
-                //Obtained From Google Developer Console
-                $phpmailer->oauthClientId = $options['oauth_client_id'];
+                            // Cleanup crew.
+                            $name    = trim( $name );
+                            $content = trim( $content );
 
-                //Obtained From Google Developer Console
-                $phpmailer->oauthClientSecret = $options['oauth_client_secret'];
+                            switch ( strtolower( $name ) ) {
+                                    // Mainly for legacy -- process a "From:" header if it's there.
+                                    case 'from':
+                                            $bracket_pos = strpos( $content, '<' );
+                                            if ( false !== $bracket_pos ) {
+                                                    // Text before the bracketed email is the "From" name.
+                                                    if ( $bracket_pos > 0 ) {
+                                                            $from_name = substr( $content, 0, $bracket_pos - 1 );
+                                                            $from_name = str_replace( '"', '', $from_name );
+                                                            $from_name = trim( $from_name );
+                                                    }
 
-                $gmail_token = json_decode($options['oauth_access_token'], true);
+                                                    $from_email = substr( $content, $bracket_pos + 1 );
+                                                    $from_email = str_replace( '>', '', $from_email );
+                                                    $from_email = trim( $from_email );
 
-                //Obtained By running get_oauth_token.php after setting up APP in Google Developer Console.
-                //Set Redirect URI in Developer Console as [https/http]://<yourdomain>/<folder>/get_oauth_token.php
-                // eg: http://localhost/phpmail/get_oauth_token.php
-                $phpmailer->oauthRefreshToken = $gmail_token['refresh_token'];
+                                                    // Avoid setting an empty $from_email.
+                                            } elseif ( '' !== trim( $content ) ) {
+                                                    $from_email = trim( $content );
+                                            }
+                                            break;
+                                    case 'content-type':
+                                            if ( strpos( $content, ';' ) !== false ) {
+                                                    list( $type, $charset_content ) = explode( ';', $content );
+                                                    $content_type                   = trim( $type );
+                                                    if ( false !== stripos( $charset_content, 'charset=' ) ) {
+                                                            $charset = trim( str_replace( array( 'charset=', '"' ), '', $charset_content ) );
+                                                    } elseif ( false !== stripos( $charset_content, 'boundary=' ) ) {
+                                                            $boundary = trim( str_replace( array( 'BOUNDARY=', 'boundary=', '"' ), '', $charset_content ) );
+                                                            $charset  = '';
+                                                    }
 
-		// Headers.
-		$cc       = array();
-		$bcc      = array();
-		$reply_to = array();
+                                                    // Avoid setting an empty $content_type.
+                                            } elseif ( '' !== trim( $content ) ) {
+                                                    $content_type = trim( $content );
+                                            }
+                                            break;
+                                    case 'cc':
+                                            $cc = array_merge( (array) $cc, explode( ',', $content ) );
+                                            break;
+                                    case 'bcc':
+                                            $bcc = array_merge( (array) $bcc, explode( ',', $content ) );
+                                            break;
+                                    case 'reply-to':
+                                            $reply_to = array_merge( (array) $reply_to, explode( ',', $content ) );
+                                            break;
+                                    default:
+                                            // Add it to our grand headers array.
+                                            $headers[ trim( $name ) ] = trim( $content );
+                                            break;
+                            }
+                    }
+            }
+    }
 
-		if ( empty( $headers ) ) {
-			$headers = array();
-		} else {
-			if ( ! is_array( $headers ) ) {
-				// Explode the headers out, so this function can take
-				// both string headers and an array of headers.
-				$tempheaders = explode( "\n", str_replace( "\r\n", "\n", $headers ) );
-			} else {
-				$tempheaders = $headers;
-			}
-			$headers = array();
+    // Empty out the values that may be set.
+    $phpmailer->clearAllRecipients();
+    $phpmailer->clearAttachments();
+    $phpmailer->clearCustomHeaders();
+    $phpmailer->clearReplyTos();
 
-			// If it's actually got contents.
-			if ( ! empty( $tempheaders ) ) {
-				// Iterate through the raw headers.
-				foreach ( (array) $tempheaders as $header ) {
-					if ( strpos( $header, ':' ) === false ) {
-						if ( false !== stripos( $header, 'boundary=' ) ) {
-							$parts    = preg_split( '/boundary=/i', trim( $header ) );
-							$boundary = trim( str_replace( array( "'", '"' ), '', $parts[1] ) );
-						}
-						continue;
-					}
-					// Explode them out.
-					list( $name, $content ) = explode( ':', trim( $header ), 2 );
+    // Set "From" name and email.
 
-					// Cleanup crew.
-					$name    = trim( $name );
-					$content = trim( $content );
+    // If we don't have a name from the input headers.
+    if ( ! isset( $from_name ) ) {
+            $from_name = $options['from_name'];//'WordPress';
+    }
 
-					switch ( strtolower( $name ) ) {
-						// Mainly for legacy -- process a "From:" header if it's there.
-						case 'from':
-							$bracket_pos = strpos( $content, '<' );
-							if ( false !== $bracket_pos ) {
-								// Text before the bracketed email is the "From" name.
-								if ( $bracket_pos > 0 ) {
-									$from_name = substr( $content, 0, $bracket_pos - 1 );
-									$from_name = str_replace( '"', '', $from_name );
-									$from_name = trim( $from_name );
-								}
+    /*
+     * If we don't have an email from the input headers, default to wordpress@$sitename
+     * Some hosts will block outgoing mail from this address if it doesn't exist,
+     * but there's no easy alternative. Defaulting to admin_email might appear to be
+     * another option, but some hosts may refuse to relay mail from an unknown domain.
+     * See https://core.trac.wordpress.org/ticket/5007.
+     */
+    if ( ! isset( $from_email ) ) {
+            // Get the site domain and get rid of www.
+            $sitename = wp_parse_url( network_home_url(), PHP_URL_HOST );
+            if ( 'www.' === substr( $sitename, 0, 4 ) ) {
+                    $sitename = substr( $sitename, 4 );
+            }
 
-								$from_email = substr( $content, $bracket_pos + 1 );
-								$from_email = str_replace( '>', '', $from_email );
-								$from_email = trim( $from_email );
+            $from_email = $options['from_email'];//'wordpress@' . $sitename;
+    }
 
-								// Avoid setting an empty $from_email.
-							} elseif ( '' !== trim( $content ) ) {
-								$from_email = trim( $content );
-							}
-							break;
-						case 'content-type':
-							if ( strpos( $content, ';' ) !== false ) {
-								list( $type, $charset_content ) = explode( ';', $content );
-								$content_type                   = trim( $type );
-								if ( false !== stripos( $charset_content, 'charset=' ) ) {
-									$charset = trim( str_replace( array( 'charset=', '"' ), '', $charset_content ) );
-								} elseif ( false !== stripos( $charset_content, 'boundary=' ) ) {
-									$boundary = trim( str_replace( array( 'BOUNDARY=', 'boundary=', '"' ), '', $charset_content ) );
-									$charset  = '';
-								}
+    /**
+     * Filters the email address to send from.
+     *
+     * @since 2.2.0
+     *
+     * @param string $from_email Email address to send from.
+     */
+    $from_email = apply_filters( 'wp_mail_from', $from_email );
 
-								// Avoid setting an empty $content_type.
-							} elseif ( '' !== trim( $content ) ) {
-								$content_type = trim( $content );
-							}
-							break;
-						case 'cc':
-							$cc = array_merge( (array) $cc, explode( ',', $content ) );
-							break;
-						case 'bcc':
-							$bcc = array_merge( (array) $bcc, explode( ',', $content ) );
-							break;
-						case 'reply-to':
-							$reply_to = array_merge( (array) $reply_to, explode( ',', $content ) );
-							break;
-						default:
-							// Add it to our grand headers array.
-							$headers[ trim( $name ) ] = trim( $content );
-							break;
-					}
-				}
-			}
-		}
+    /**
+     * Filters the name to associate with the "from" email address.
+     *
+     * @since 2.3.0
+     *
+     * @param string $from_name Name associated with the "from" email address.
+     */
+    $from_name = apply_filters( 'wp_mail_from_name', $from_name );
 
-		// Empty out the values that may be set.
-		$phpmailer->clearAllRecipients();
-		$phpmailer->clearAttachments();
-		$phpmailer->clearCustomHeaders();
-		$phpmailer->clearReplyTos();
+    try {
+            $phpmailer->setFrom( $from_email, $from_name, false );
+    } catch ( PHPMailer\PHPMailer\Exception $e ) {
+            $mail_error_data                             = compact( 'to', 'subject', 'message', 'headers', 'attachments' );
+            $mail_error_data['phpmailer_exception_code'] = $e->getCode();
 
-		// Set "From" name and email.
+            /** This filter is documented in wp-includes/pluggable.php */
+            do_action( 'wp_mail_failed', new WP_Error( 'wp_mail_failed', $e->getMessage(), $mail_error_data ) );
 
-		// If we don't have a name from the input headers.
-		if ( ! isset( $from_name ) ) {
-			$from_name = $options['from_name'];//'WordPress';
-		}
+            return false;
+    }
 
-		/*
-		 * If we don't have an email from the input headers, default to wordpress@$sitename
-		 * Some hosts will block outgoing mail from this address if it doesn't exist,
-		 * but there's no easy alternative. Defaulting to admin_email might appear to be
-		 * another option, but some hosts may refuse to relay mail from an unknown domain.
-		 * See https://core.trac.wordpress.org/ticket/5007.
-		 */
-		if ( ! isset( $from_email ) ) {
-			// Get the site domain and get rid of www.
-			$sitename = wp_parse_url( network_home_url(), PHP_URL_HOST );
-			if ( 'www.' === substr( $sitename, 0, 4 ) ) {
-				$sitename = substr( $sitename, 4 );
-			}
+    // Set mail's subject and body.
+    $phpmailer->Subject = $subject;
+    $phpmailer->Body    = $message;
 
-			$from_email = $options['from_email'];//'wordpress@' . $sitename;
-		}
+    // Set destination addresses, using appropriate methods for handling addresses.
+    $address_headers = compact( 'to', 'cc', 'bcc', 'reply_to' );
 
-		/**
-		 * Filters the email address to send from.
-		 *
-		 * @since 2.2.0
-		 *
-		 * @param string $from_email Email address to send from.
-		 */
-		$from_email = apply_filters( 'wp_mail_from', $from_email );
+    foreach ( $address_headers as $address_header => $addresses ) {
+            if ( empty( $addresses ) ) {
+                    continue;
+            }
 
-		/**
-		 * Filters the name to associate with the "from" email address.
-		 *
-		 * @since 2.3.0
-		 *
-		 * @param string $from_name Name associated with the "from" email address.
-		 */
-		$from_name = apply_filters( 'wp_mail_from_name', $from_name );
+            foreach ( (array) $addresses as $address ) {
+                    try {
+                            // Break $recipient into name and address parts if in the format "Foo <bar@baz.com>".
+                            $recipient_name = '';
 
-		try {
-			$phpmailer->setFrom( $from_email, $from_name, false );
-		} catch ( PHPMailer\PHPMailer\Exception $e ) {
-			$mail_error_data                             = compact( 'to', 'subject', 'message', 'headers', 'attachments' );
-			$mail_error_data['phpmailer_exception_code'] = $e->getCode();
+                            if ( preg_match( '/(.*)<(.+)>/', $address, $matches ) ) {
+                                    if ( count( $matches ) == 3 ) {
+                                            $recipient_name = $matches[1];
+                                            $address        = $matches[2];
+                                    }
+                            }
 
-			/** This filter is documented in wp-includes/pluggable.php */
-			do_action( 'wp_mail_failed', new WP_Error( 'wp_mail_failed', $e->getMessage(), $mail_error_data ) );
+                            switch ( $address_header ) {
+                                    case 'to':
+                                            $phpmailer->addAddress( $address, $recipient_name );
+                                            break;
+                                    case 'cc':
+                                            $phpmailer->addCc( $address, $recipient_name );
+                                            break;
+                                    case 'bcc':
+                                            $phpmailer->addBcc( $address, $recipient_name );
+                                            break;
+                                    case 'reply_to':
+                                            $phpmailer->addReplyTo( $address, $recipient_name );
+                                            break;
+                            }
+                    } catch ( PHPMailer\PHPMailer\Exception $e ) {
+                            continue;
+                    }
+            }
+    }
 
-			return false;
-		}
+    // Set Content-Type and charset.
 
-		// Set mail's subject and body.
-		$phpmailer->Subject = $subject;
-		$phpmailer->Body    = $message;
+    // If we don't have a content-type from the input headers.
+    if ( ! isset( $content_type ) ) {
+            $content_type = 'text/plain';
+    }
 
-		// Set destination addresses, using appropriate methods for handling addresses.
-		$address_headers = compact( 'to', 'cc', 'bcc', 'reply_to' );
+    /**
+     * Filters the wp_mail() content type.
+     *
+     * @since 2.3.0
+     *
+     * @param string $content_type Default wp_mail() content type.
+     */
+    $content_type = apply_filters( 'wp_mail_content_type', $content_type );
 
-		foreach ( $address_headers as $address_header => $addresses ) {
-			if ( empty( $addresses ) ) {
-				continue;
-			}
+    $phpmailer->ContentType = $content_type;
 
-			foreach ( (array) $addresses as $address ) {
-				try {
-					// Break $recipient into name and address parts if in the format "Foo <bar@baz.com>".
-					$recipient_name = '';
+    // Set whether it's plaintext, depending on $content_type.
+    if ( 'text/html' === $content_type ) {
+            $phpmailer->isHTML( true );
+    }
 
-					if ( preg_match( '/(.*)<(.+)>/', $address, $matches ) ) {
-						if ( count( $matches ) == 3 ) {
-							$recipient_name = $matches[1];
-							$address        = $matches[2];
-						}
-					}
+    // If we don't have a charset from the input headers.
+    if ( ! isset( $charset ) ) {
+            $charset = get_bloginfo( 'charset' );
+    }
 
-					switch ( $address_header ) {
-						case 'to':
-							$phpmailer->addAddress( $address, $recipient_name );
-							break;
-						case 'cc':
-							$phpmailer->addCc( $address, $recipient_name );
-							break;
-						case 'bcc':
-							$phpmailer->addBcc( $address, $recipient_name );
-							break;
-						case 'reply_to':
-							$phpmailer->addReplyTo( $address, $recipient_name );
-							break;
-					}
-				} catch ( PHPMailer\PHPMailer\Exception $e ) {
-					continue;
-				}
-			}
-		}
+    /**
+     * Filters the default wp_mail() charset.
+     *
+     * @since 2.3.0
+     *
+     * @param string $charset Default email charset.
+     */
+    $phpmailer->CharSet = apply_filters( 'wp_mail_charset', $charset );
 
-		// Set Content-Type and charset.
+    // Set custom headers.
+    if ( ! empty( $headers ) ) {
+            foreach ( (array) $headers as $name => $content ) {
+                    // Only add custom headers not added automatically by PHPMailer.
+                    if ( ! in_array( $name, array( 'MIME-Version', 'X-Mailer' ), true ) ) {
+                            try {
+                                    $phpmailer->addCustomHeader( sprintf( '%1$s: %2$s', $name, $content ) );
+                            } catch ( PHPMailer\PHPMailer\Exception $e ) {
+                                    continue;
+                            }
+                    }
+            }
 
-		// If we don't have a content-type from the input headers.
-		if ( ! isset( $content_type ) ) {
-			$content_type = 'text/plain';
-		}
+            if ( false !== stripos( $content_type, 'multipart' ) && ! empty( $boundary ) ) {
+                    $phpmailer->addCustomHeader( sprintf( 'Content-Type: %s; boundary="%s"', $content_type, $boundary ) );
+            }
+    }
 
-		/**
-		 * Filters the wp_mail() content type.
-		 *
-		 * @since 2.3.0
-		 *
-		 * @param string $content_type Default wp_mail() content type.
-		 */
-		$content_type = apply_filters( 'wp_mail_content_type', $content_type );
+    if ( ! empty( $attachments ) ) {
+            foreach ( $attachments as $attachment ) {
+                    try {
+                            $phpmailer->addAttachment( $attachment );
+                    } catch ( PHPMailer\PHPMailer\Exception $e ) {
+                            continue;
+                    }
+            }
+    }
 
-		$phpmailer->ContentType = $content_type;
+    /**
+     * Fires after PHPMailer is initialized.
+     *
+     * @since 2.2.0
+     *
+     * @param PHPMailer $phpmailer The PHPMailer instance (passed by reference).
+     */
+    do_action_ref_array( 'phpmailer_init', array( &$phpmailer ) );
 
-		// Set whether it's plaintext, depending on $content_type.
-		if ( 'text/html' === $content_type ) {
-			$phpmailer->isHTML( true );
-		}
+    // Send!
+    try {
+            return $phpmailer->send();
+    } catch ( PHPMailer\PHPMailer\Exception $e ) {
 
-		// If we don't have a charset from the input headers.
-		if ( ! isset( $charset ) ) {
-			$charset = get_bloginfo( 'charset' );
-		}
+            $mail_error_data                             = compact( 'to', 'subject', 'message', 'headers', 'attachments' );
+            $mail_error_data['phpmailer_exception_code'] = $e->getCode();
 
-		/**
-		 * Filters the default wp_mail() charset.
-		 *
-		 * @since 2.3.0
-		 *
-		 * @param string $charset Default email charset.
-		 */
-		$phpmailer->CharSet = apply_filters( 'wp_mail_charset', $charset );
+            /**
+             * Fires after a PHPMailer\PHPMailer\Exception is caught.
+             *
+             * @since 4.4.0
+             *
+             * @param WP_Error $error A WP_Error object with the PHPMailer\PHPMailer\Exception message, and an array
+             *                        containing the mail recipient, subject, message, headers, and attachments.
+             */
+            do_action( 'wp_mail_failed', new WP_Error( 'wp_mail_failed', $e->getMessage(), $mail_error_data ) );
 
-		// Set custom headers.
-		if ( ! empty( $headers ) ) {
-			foreach ( (array) $headers as $name => $content ) {
-				// Only add custom headers not added automatically by PHPMailer.
-				if ( ! in_array( $name, array( 'MIME-Version', 'X-Mailer' ), true ) ) {
-					try {
-						$phpmailer->addCustomHeader( sprintf( '%1$s: %2$s', $name, $content ) );
-					} catch ( PHPMailer\PHPMailer\Exception $e ) {
-						continue;
-					}
-				}
-			}
-
-			if ( false !== stripos( $content_type, 'multipart' ) && ! empty( $boundary ) ) {
-				$phpmailer->addCustomHeader( sprintf( 'Content-Type: %s; boundary="%s"', $content_type, $boundary ) );
-			}
-		}
-
-		if ( ! empty( $attachments ) ) {
-			foreach ( $attachments as $attachment ) {
-				try {
-					$phpmailer->addAttachment( $attachment );
-				} catch ( PHPMailer\PHPMailer\Exception $e ) {
-					continue;
-				}
-			}
-		}
-
-		/**
-		 * Fires after PHPMailer is initialized.
-		 *
-		 * @since 2.2.0
-		 *
-		 * @param PHPMailer $phpmailer The PHPMailer instance (passed by reference).
-		 */
-		do_action_ref_array( 'phpmailer_init', array( &$phpmailer ) );
-
-		// Send!
-		try {
-			return $phpmailer->send();
-		} catch ( PHPMailer\PHPMailer\Exception $e ) {
-
-			$mail_error_data                             = compact( 'to', 'subject', 'message', 'headers', 'attachments' );
-			$mail_error_data['phpmailer_exception_code'] = $e->getCode();
-
-			/**
-			 * Fires after a PHPMailer\PHPMailer\Exception is caught.
-			 *
-			 * @since 4.4.0
-			 *
-			 * @param WP_Error $error A WP_Error object with the PHPMailer\PHPMailer\Exception message, and an array
-			 *                        containing the mail recipient, subject, message, headers, and attachments.
-			 */
-			do_action( 'wp_mail_failed', new WP_Error( 'wp_mail_failed', $e->getMessage(), $mail_error_data ) );
-
-			return false;
-		}
-	}
+            return false;
+    }
     
 }
