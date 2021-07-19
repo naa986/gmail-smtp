@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: Gmail SMTP
-Version: 1.2.1
+Version: 1.2.2
 Plugin URI: https://wphowto.net/gmail-smtp-plugin-for-wordpress-1341
 Author: naa986
 Author URI: https://wphowto.net/
@@ -16,7 +16,7 @@ if (!defined('ABSPATH')){
 
 class GMAIL_SMTP {
     
-    var $plugin_version = '1.2.1';
+    var $plugin_version = '1.2.2';
     var $phpmailer_version = '6.3.0';
     var $google_api_client_version = '2.2.0';
     var $plugin_url;
@@ -436,7 +436,7 @@ class GMAIL_SMTP {
                     <tr valign="top">
                         <th scope="row"><label for="from_email"><?php _e('From Email Address', 'gmail-smtp');?></label></th>
                         <td><input name="from_email" type="text" id="from_email" value="<?php echo esc_attr($options['from_email']); ?>" class="regular-text code">
-                            <p class="description"><?php _e('The email address which will be used as the From Address when sending an email.', 'gmail-smtp');?></p></td>
+                            <p class="description"><?php _e('The email address which will be used as the From Address when sending an email. Gmail currently ignores this value if it is different from the OAuth Email Address.', 'gmail-smtp');?></p></td>
                     </tr>
                     
                     <tr valign="top">
