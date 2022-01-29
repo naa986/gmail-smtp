@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: Gmail SMTP
-Version: 1.2.2
+Version: 1.2.3
 Plugin URI: https://wphowto.net/gmail-smtp-plugin-for-wordpress-1341
 Author: naa986
 Author URI: https://wphowto.net/
@@ -16,8 +16,8 @@ if (!defined('ABSPATH')){
 
 class GMAIL_SMTP {
     
-    var $plugin_version = '1.2.2';
-    var $phpmailer_version = '6.3.0';
+    var $plugin_version = '1.2.3';
+    var $phpmailer_version = '6.5.3';
     var $google_api_client_version = '2.2.0';
     var $plugin_url;
     var $plugin_path;
@@ -944,13 +944,28 @@ function gmail_smtp_pre_wp_mail($null, $atts)
      */
     do_action_ref_array( 'phpmailer_init', array( &$phpmailer ) );
 
+    $mail_data = compact( 'to', 'subject', 'message', 'headers', 'attachments' );
+
     // Send!
     try {
-            return $phpmailer->send();
-    } catch ( PHPMailer\PHPMailer\Exception $e ) {
+            $send = $phpmailer->send();
 
-            $mail_error_data                             = compact( 'to', 'subject', 'message', 'headers', 'attachments' );
-            $mail_error_data['phpmailer_exception_code'] = $e->getCode();
+            /**
+             * Fires after PHPMailer has successfully sent a mail.
+             *
+             * The firing of this action does not necessarily mean that the recipient received the
+             * email successfully. It only means that the `send` method above was able to
+             * process the request without any errors.
+             *
+             * @since 5.9.0
+             *
+             * @param array $mail_data An array containing the mail recipient, subject, message, headers, and attachments.
+             */
+            do_action( 'wp_mail_succeeded', $mail_data );
+
+            return $send;
+    } catch ( PHPMailer\PHPMailer\Exception $e ) {
+            $mail_data['phpmailer_exception_code'] = $e->getCode();
 
             /**
              * Fires after a PHPMailer\PHPMailer\Exception is caught.
@@ -960,7 +975,7 @@ function gmail_smtp_pre_wp_mail($null, $atts)
              * @param WP_Error $error A WP_Error object with the PHPMailer\PHPMailer\Exception message, and an array
              *                        containing the mail recipient, subject, message, headers, and attachments.
              */
-            do_action( 'wp_mail_failed', new WP_Error( 'wp_mail_failed', $e->getMessage(), $mail_error_data ) );
+            do_action( 'wp_mail_failed', new WP_Error( 'wp_mail_failed', $e->getMessage(), $mail_data ) );
 
             return false;
     }

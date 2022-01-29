@@ -2,10 +2,10 @@
 Contributors: naa986
 Donate link: https://wphowto.net/
 Tags: smtp, gmail, mail, email, oauth
-Requires at least: 5.7
-Tested up to: 5.8
+Requires at least: 5.9
+Tested up to: 5.9
 Requires PHP: 5.6
-Stable tag: 1.2.2
+Stable tag: 1.2.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -18,12 +18,6 @@ Connect to Gmail SMTP server to automatically send email from your WordPress sit
 Most shared hosting servers have restrictions when it comes to email. Usually email will get blocked or missing for no reason. Sometimes it will get blocked when your website reaches the daily limit of outgoing email. This plugin can bypass this issue by routing the email through Gmail's SMTP server.
 
 https://www.youtube.com/watch?v=_MCxcvfoGj4&rel=0
-
-= Requirements =
-
-* PHP 5.6 or later
-* A Gmail Account
-* A self-hosted website running on [WordPress hosting](https://wphowto.net/best-cheap-wordpress-hosting-1689)
 
 = Gmail SMTP Benefits =
 
@@ -126,6 +120,9 @@ For screenshots please visit the [Gmail SMTP](https://wphowto.net/gmail-smtp-plu
 none
 
 == Changelog ==
+
+= 1.2.3 =
+* Updated the mail function for WordPress 5.9.
 
 = 1.2.2 =
 * Updated for WordPress 5.8.
