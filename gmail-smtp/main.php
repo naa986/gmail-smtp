@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: Gmail SMTP
-Version: 1.2.3
+Version: 1.2.3.1
 Plugin URI: https://wphowto.net/gmail-smtp-plugin-for-wordpress-1341
 Author: naa986
 Author URI: https://wphowto.net/
@@ -16,7 +16,7 @@ if (!defined('ABSPATH')){
 
 class GMAIL_SMTP {
     
-    var $plugin_version = '1.2.3';
+    var $plugin_version = '1.2.3.1';
     var $phpmailer_version = '6.5.3';
     var $google_api_client_version = '2.2.0';
     var $plugin_url;
@@ -605,11 +605,10 @@ function gmail_smtp_pre_wp_mail($null, $atts)
     }
 
     if ( isset( $atts['attachments'] ) ) {
-            $attachments = $atts['attachments'];
-    }
-
-    if ( ! is_array( $attachments ) ) {
-            $attachments = explode( "\n", str_replace( "\r\n", "\n", $attachments ) );
+            $attachments = $atts['attachments'];           
+            if ( ! is_array( $attachments ) ) {
+                    $attachments = explode( "\n", str_replace( "\r\n", "\n", $attachments ) );
+            }
     }
     
     require_once ABSPATH . WPINC . '/PHPMailer/PHPMailer.php';
@@ -925,7 +924,7 @@ function gmail_smtp_pre_wp_mail($null, $atts)
             }
     }
 
-    if ( ! empty( $attachments ) ) {
+    if ( isset( $attachments ) && ! empty( $attachments ) ) {
             foreach ( $attachments as $attachment ) {
                     try {
                             $phpmailer->addAttachment( $attachment );
