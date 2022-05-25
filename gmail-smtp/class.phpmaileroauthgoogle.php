@@ -104,7 +104,7 @@ class GmailXOAuth2 {
         if(!empty($accessToken)) {
             if(isset($accessToken['error']) || isset($accessToken['error_description'])){
                 echo '<div id="message" class="error"><p><strong>';
-                echo __('Error: '.$accessToken['error'].', Error Description: '.$accessToken['error_description'], 'gmail-smtp');
+                esc_html_e('Error: '.$accessToken['error'].', Error Description: '.$accessToken['error_description'], 'gmail-smtp');
                 echo '</strong></p></div>';
                 return false;
             }

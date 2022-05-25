@@ -3,9 +3,9 @@ Contributors: naa986
 Donate link: https://wphowto.net/
 Tags: smtp, gmail, mail, email, oauth
 Requires at least: 5.9
-Tested up to: 5.9
+Tested up to: 6.0
 Requires PHP: 5.6
-Stable tag: 1.2.3.1
+Stable tag: 1.2.3.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -120,6 +120,9 @@ For screenshots please visit the [Gmail SMTP](https://wphowto.net/gmail-smtp-plu
 none
 
 == Changelog ==
+
+= 1.2.3.2 =
+* Updated the mail function for WordPress 6.0.
 
 = 1.2.3.1 =
 * Fixed an issue that could cause an Undefined variable error if $attachments was not set.

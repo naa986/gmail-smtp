@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: Gmail SMTP
-Version: 1.2.3.1
+Version: 1.2.3.2
 Plugin URI: https://wphowto.net/gmail-smtp-plugin-for-wordpress-1341
 Author: naa986
 Author URI: https://wphowto.net/
@@ -16,8 +16,8 @@ if (!defined('ABSPATH')){
 
 class GMAIL_SMTP {
     
-    var $plugin_version = '1.2.3.1';
-    var $phpmailer_version = '6.5.3';
+    var $plugin_version = '1.2.3.2';
+    var $phpmailer_version = '6.6.0';
     var $google_api_client_version = '2.2.0';
     var $plugin_url;
     var $plugin_path;
@@ -95,15 +95,22 @@ class GMAIL_SMTP {
             'gmail-smtp-settings&action=server-info' => __('Server Info', 'gmail-smtp'),
         );
         $url = "https://wphowto.net/gmail-smtp-plugin-for-wordpress-1341";
-        $link_text = sprintf(wp_kses(__('Please visit the <a target="_blank" href="%s">Gmail SMTP</a> documentation page for usage instructions.', 'gmail-smtp'), array('a' => array('href' => array(), 'target' => array()))), esc_url($url));
+        $link_text = sprintf(__('Please visit the <a target="_blank" href="%s">Gmail SMTP</a> documentation page for usage instructions.', 'gmail-smtp'), esc_url($url));
+        $allowed_html_tags = array(
+            'a' => array(
+                'href' => array(),
+                'target' => array()
+            )
+        );
         echo '<div class="wrap"><h2>Gmail SMTP v' . GMAIL_SMTP_VERSION . '</h2>';
-        echo '<div class="update-nag">'.$link_text.'</div>';
-        echo '<div id="poststuff"><div id="post-body">';
-
+        echo '<div class="update-nag">'.wp_kses($link_text, $allowed_html_tags).'</div>';
+        $current = '';
+        $action = '';
         if (isset($_GET['page'])) {
-            $current = $_GET['page'];
+            $current = sanitize_text_field($_GET['page']);
             if (isset($_GET['action'])) {
-                $current .= "&action=" . $_GET['action'];
+                $action = sanitize_text_field($_GET['action']);
+                $current .= "&action=" . $action;
             }
         }
         $content = '';
@@ -117,21 +124,36 @@ class GMAIL_SMTP {
             $content .= '<a class="nav-tab' . $class . '" href="?page=' . $location . '">' . $tabname . '</a>';
         }
         $content .= '</h2>';
-        echo $content;
-                
-        if(isset($_GET['action']) && $_GET['action'] == 'test-email'){            
-            $this->test_email_settings();
+        $allowed_html_tags = array(
+            'a' => array(
+                'href' => array(),
+                'class' => array()
+            ),
+            'h2' => array(
+                'href' => array(),
+                'class' => array()
+            )
+        );
+        echo wp_kses($content, $allowed_html_tags);
+        if(!empty($action))
+        { 
+            switch($action)
+            {
+               case 'test-email':
+                   $this->test_email_settings();
+                   break;
+               case 'revoke-access':
+                   $this->revoke_access_settings();
+                   break;
+               case 'server-info':
+                   $this->server_info_settings();
+                   break;
+            }
         }
-        else if(isset($_GET['action']) && $_GET['action'] == 'revoke-access'){            
-            $this->revoke_access_settings();
-        }
-        else if(isset($_GET['action']) && $_GET['action'] == 'server-info'){            
-            $this->server_info_settings();
-        }
-        else{
+        else
+        {
             $this->general_settings();
-        }
-        echo '</div></div>';
+        }        
         echo '</div>';
     }
     
@@ -143,7 +165,7 @@ class GMAIL_SMTP {
                 include_once('class.phpmaileroauthgoogle.php');
                 
                 if (isset($_GET['code'])) {
-                    $authCode = $_GET['code'];
+                    $authCode = sanitize_text_field($_GET['code']);
                     $accessToken = GmailXOAuth2::resetCredentials($authCode);
                     if(isset($accessToken) && !empty($accessToken)){                       
                         //echo __('Access Granted Successfully!', 'gmail-smtp');
@@ -158,7 +180,7 @@ class GMAIL_SMTP {
                     $authUrl_array = GmailXOAuth2::authenticate();
                     if(isset($authUrl_array['authorization_uri'])){
                         $authUrl= $authUrl_array['authorization_uri'];
-                        wp_redirect($authUrl);
+                        wp_redirect(esc_url_raw($authUrl));
                         exit;
                     }
                 }
@@ -172,7 +194,7 @@ class GMAIL_SMTP {
         if(isset($_POST['gmail_smtp_send_test_email'])){
             $to = '';
             if(isset($_POST['gmail_smtp_to_email']) && !empty($_POST['gmail_smtp_to_email'])){
-                $to = sanitize_text_field($_POST['gmail_smtp_to_email']);
+                $to = sanitize_email($_POST['gmail_smtp_to_email']);
             }
             $subject = '';
             if(isset($_POST['gmail_smtp_email_subject']) && !empty($_POST['gmail_smtp_email_subject'])){
@@ -186,7 +208,7 @@ class GMAIL_SMTP {
             wp_mail($to, $subject, $message);
         }
         ?>
-        <form method="post" action="<?php echo $_SERVER["REQUEST_URI"]; ?>">
+        <form method="post" action="">
             <?php wp_nonce_field('gmail_smtp_test_email'); ?>
 
             <table class="form-table">
@@ -302,7 +324,7 @@ class GMAIL_SMTP {
             $server_info .= sprintf('cURL Version: %s, %s%s', $curl_version['version'], $curl_version['ssl_version'], PHP_EOL);
         }
         ?>
-        <textarea rows="10" cols="50" class="large-text code"><?php echo $server_info;?></textarea>
+        <textarea rows="10" cols="50" class="large-text code"><?php echo esc_textarea($server_info);?></textarea>
         <?php
     }
 
@@ -390,7 +412,7 @@ class GMAIL_SMTP {
             $options['disable_ssl_verification'] = '';
         }
         ?>
-        <form method="post" action="<?php echo $_SERVER["REQUEST_URI"]; ?>">
+        <form method="post" action="">
             <?php wp_nonce_field('gmail_smtp_general_settings'); ?>
 
             <table class="form-table">
@@ -400,18 +422,18 @@ class GMAIL_SMTP {
                     <tr valign="top">
                         <th scope="row"><label><?php _e('SMTP Status', 'gmail-smtp');?></label></th>
                         <?php if(isset($options['oauth_access_token']) && !empty($options['oauth_access_token'])){ ?>
-                        <td><img src="<?php echo GMAIL_SMTP_URL.'/images/connected.png';?>" style="height: 30px;">
+                        <td><img src="<?php echo esc_attr(GMAIL_SMTP_URL.'/images/connected.png');?>" style="height: 30px;">
                             <p class="description"><?php _e('Connected', 'gmail-smtp');?></p></td>
                         <?php }
                         else{ ?>
-                        <td><img src="<?php echo GMAIL_SMTP_URL.'/images/not-connected.png';?>" style="height: 30px;">
+                        <td><img src="<?php echo esc_attr(GMAIL_SMTP_URL.'/images/not-connected.png');?>" style="height: 30px;">
                             <p class="description"><?php _e('Not Connected', 'gmail-smtp');?></p></td>    
                         <?php } ?>
                     </tr>
 
                     <tr valign="top">
                         <th scope="row"><label for="oauth_redirect_uri"><?php _e('Authorized Redirect URI', 'gmail-smtp');?></label></th>
-                        <td><input name="oauth_redirect_uri" type="text" id="oauth_redirect_uri" value="<?php echo esc_url_raw(admin_url("options-general.php?page=gmail-smtp-settings&action=oauth_grant")); ?>" readonly class="regular-text code">
+                        <td><input name="oauth_redirect_uri" type="text" id="oauth_redirect_uri" value="<?php echo esc_url(admin_url("options-general.php?page=gmail-smtp-settings&action=oauth_grant")); ?>" readonly class="regular-text code">
                             <p class="description"><?php _e('Copy this URL into your web application', 'gmail-smtp');?></p></td>
                     </tr>
 
@@ -787,11 +809,16 @@ function gmail_smtp_pre_wp_mail($null, $atts)
      */
     if ( ! isset( $from_email ) ) {
             // Get the site domain and get rid of www.
-            $sitename = wp_parse_url( network_home_url(), PHP_URL_HOST );
-            if ( 'www.' === substr( $sitename, 0, 4 ) ) {
-                    $sitename = substr( $sitename, 4 );
-            }
+            $sitename   = wp_parse_url( network_home_url(), PHP_URL_HOST );
+            $from_email = 'wordpress@';
 
+            if ( null !== $sitename ) {
+                    if ( 'www.' === substr( $sitename, 0, 4 ) ) {
+                            $sitename = substr( $sitename, 4 );
+                    }
+
+                    $from_email .= $sitename;
+            }
             $from_email = $options['from_email'];//'wordpress@' . $sitename;
     }
 
@@ -950,15 +977,23 @@ function gmail_smtp_pre_wp_mail($null, $atts)
             $send = $phpmailer->send();
 
             /**
-             * Fires after PHPMailer has successfully sent a mail.
+             * Fires after PHPMailer has successfully sent an email.
              *
-             * The firing of this action does not necessarily mean that the recipient received the
+             * The firing of this action does not necessarily mean that the recipient(s) received the
              * email successfully. It only means that the `send` method above was able to
              * process the request without any errors.
              *
              * @since 5.9.0
              *
-             * @param array $mail_data An array containing the mail recipient, subject, message, headers, and attachments.
+             * @param array $mail_data {
+             *     An array containing the email recipient(s), subject, message, headers, and attachments.
+             *
+             *     @type string[] $to          Email addresses to send message.
+             *     @type string   $subject     Email subject.
+             *     @type string   $message     Message contents.
+             *     @type string[] $headers     Additional headers.
+             *     @type string[] $attachments Paths to files to attach.
+             * }
              */
             do_action( 'wp_mail_succeeded', $mail_data );
 
