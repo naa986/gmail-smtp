@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: Gmail SMTP
-Version: 1.2.3.2
+Version: 1.2.3.3
 Plugin URI: https://wphowto.net/gmail-smtp-plugin-for-wordpress-1341
 Author: naa986
 Author URI: https://wphowto.net/
@@ -16,8 +16,8 @@ if (!defined('ABSPATH')){
 
 class GMAIL_SMTP {
     
-    var $plugin_version = '1.2.3.2';
-    var $phpmailer_version = '6.6.0';
+    var $plugin_version = '1.2.3.3';
+    var $phpmailer_version = '6.6.5';
     var $google_api_client_version = '2.2.0';
     var $plugin_url;
     var $plugin_path;
@@ -739,7 +739,7 @@ function gmail_smtp_pre_wp_mail($null, $atts)
                                             if ( false !== $bracket_pos ) {
                                                     // Text before the bracketed email is the "From" name.
                                                     if ( $bracket_pos > 0 ) {
-                                                            $from_name = substr( $content, 0, $bracket_pos - 1 );
+                                                            $from_name = substr( $content, 0, $bracket_pos );
                                                             $from_name = str_replace( '"', '', $from_name );
                                                             $from_name = trim( $from_name );
                                                     }
@@ -792,6 +792,8 @@ function gmail_smtp_pre_wp_mail($null, $atts)
     $phpmailer->clearAttachments();
     $phpmailer->clearCustomHeaders();
     $phpmailer->clearReplyTos();
+    $phpmailer->Body    = '';
+    $phpmailer->AltBody = '';
 
     // Set "From" name and email.
 
