@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: Gmail SMTP
-Version: 1.2.3.3
+Version: 1.2.3.4
 Plugin URI: https://wphowto.net/gmail-smtp-plugin-for-wordpress-1341
 Author: naa986
 Author URI: https://wphowto.net/
@@ -16,7 +16,7 @@ if (!defined('ABSPATH')){
 
 class GMAIL_SMTP {
     
-    var $plugin_version = '1.2.3.3';
+    var $plugin_version = '1.2.3.4';
     var $phpmailer_version = '6.6.5';
     var $google_api_client_version = '2.2.0';
     var $plugin_url;
@@ -49,14 +49,24 @@ class GMAIL_SMTP {
     function loader_operations() {
         if (is_admin()) {
             add_filter('plugin_action_links', array($this, 'add_plugin_action_links'), 10, 2);
+            include_once('addons/gmail-smtp-addons.php');
         }
         add_action('plugins_loaded', array($this, 'plugins_loaded_handler'));
         add_action('admin_menu', array($this, 'options_menu'));
+        add_action('admin_enqueue_scripts', array($this, 'enqueue_admin_scripts'));
         add_action('init', array($this, 'plugin_init'));
         add_action('admin_notices', 'gmail_smtp_admin_notice');
         if(is_gmail_smtp_configured()){
             add_filter('pre_wp_mail', 'gmail_smtp_pre_wp_mail', 10, 2);
         }
+    }
+    
+    function enqueue_admin_scripts($hook) {
+        if('settings_page_gmail-smtp-settings' != $hook) {
+            return;
+        }
+        wp_register_style('gmail-smtp-addons-menu', GMAIL_SMTP_URL.'/addons/gmail-smtp-addons.css');
+        wp_enqueue_style('gmail-smtp-addons-menu');
     }
     
     function plugins_loaded_handler()
@@ -93,6 +103,8 @@ class GMAIL_SMTP {
             'gmail-smtp-settings&action=test-email' => __('Test Email', 'gmail-smtp'),
             'gmail-smtp-settings&action=revoke-access' => __('Revoke Access', 'gmail-smtp'),
             'gmail-smtp-settings&action=server-info' => __('Server Info', 'gmail-smtp'),
+            'gmail-smtp-settings&action=addons' => __('Add-ons', 'gmail-smtp'),
+            'gmail-smtp-settings&action=advanced' => __('Advanced', 'gmail-smtp'),
         );
         $url = "https://wphowto.net/gmail-smtp-plugin-for-wordpress-1341";
         $link_text = sprintf(__('Please visit the <a target="_blank" href="%s">Gmail SMTP</a> documentation page for usage instructions.', 'gmail-smtp'), esc_url($url));
@@ -147,6 +159,12 @@ class GMAIL_SMTP {
                    break;
                case 'server-info':
                    $this->server_info_settings();
+                   break;
+               case 'addons':
+                   gmail_smtp_display_addons();
+                   break;
+               case 'advanced':
+                   $this->advanced_settings();
                    break;
             }
         }
@@ -505,6 +523,46 @@ class GMAIL_SMTP {
         }        
     }
     
+    function advanced_settings() {
+        ?>
+        <div class="update-nag"><?php _e('Settings from add-ons will appear here.', 'gmail-smtp');?></div>
+        <?php        
+        if (isset($_POST['gmail_smtp_update_advanced_settings'])) {
+            $nonce = $_REQUEST['_wpnonce'];
+            if (!wp_verify_nonce($nonce, 'gmail_smtp_advanced_settings')) {
+                wp_die('Error! Nonce Security Check Failed! please save the settings again.');
+            }
+            $post = $_POST;
+            do_action('gmail_smtp_advanced_settings_submitted', $post);
+            echo '<div id="message" class="updated fade"><p><strong>';
+            echo __('Settings Saved!', 'gmail-smtp');
+            echo '</strong></p></div>';
+        }
+        $settings_fields = '';
+        $settings_fields = apply_filters('gmail_smtp_advanced_settings_fields', $settings_fields);
+        if(empty($settings_fields)){
+            return;
+        }
+        ?>
+        <form method="post" action="">
+            <?php wp_nonce_field('gmail_smtp_advanced_settings'); ?>
+
+            <table class="form-table">
+                <tbody>                                    
+                    <?php
+                    if(!empty($settings_fields)){
+                        echo $settings_fields;
+                    }
+                    ?>
+                </tbody>
+
+            </table>
+
+            <p class="submit"><input type="submit" name="gmail_smtp_update_advanced_settings" id="gmail_smtp_update_advanced_settings" class="button button-primary" value="<?php _e('Save Changes', 'gmail-smtp');?>"></p>
+        </form>
+        <?php
+    }
+    
     function can_grant_permission(){
         $options = gmail_smtp_get_option();    
         $grant_permission = true;
@@ -853,7 +911,19 @@ function gmail_smtp_pre_wp_mail($null, $atts)
 
             return false;
     }
-
+    /*reply_to code */
+    $gmailsmtp_reply_to = array();
+    $gmailsmtp_reply_to = apply_filters('gmailsmtp_reply_to', $gmailsmtp_reply_to);
+    if(isset($gmailsmtp_reply_to['reply_to_email_address']) && is_email($gmailsmtp_reply_to['reply_to_email_address'])){
+        $reply_to_address = $gmailsmtp_reply_to['reply_to_email_address'];
+        if(isset($gmailsmtp_reply_to['reply_to_name']) && !empty($gmailsmtp_reply_to['reply_to_name'])){
+            $reply_to_name = $gmailsmtp_reply_to['reply_to_name'];
+            $reply_to_address = $reply_to_name.' <'.$reply_to_address.'>';
+        }
+        $reply_to = array();
+        $reply_to[] = $reply_to_address;
+    }
+    /*end of reply_to code */
     // Set mail's subject and body.
     $phpmailer->Subject = $subject;
     $phpmailer->Body    = $message;
