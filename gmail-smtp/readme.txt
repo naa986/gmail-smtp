@@ -5,7 +5,7 @@ Tags: smtp, gmail, mail, email, oauth
 Requires at least: 6.1
 Tested up to: 6.1
 Requires PHP: 5.6
-Stable tag: 1.2.3.4
+Stable tag: 1.2.3.5
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -22,6 +22,7 @@ https://www.youtube.com/watch?v=_MCxcvfoGj4&rel=0
 === Gmail SMTP Add-ons ===
 
 * [Reply-To](https://wphowto.net/how-to-add-a-reply-to-address-in-the-gmail-smtp-wordpress-plugin-6756)
+* [Cc](https://wphowto.net/gmail-smtp-plugin-cc-configuration-6770)
 
 === Gmail SMTP Benefits ===
 
@@ -124,6 +125,9 @@ For screenshots please visit the [Gmail SMTP](https://wphowto.net/gmail-smtp-plu
 none
 
 == Changelog ==
+
+= 1.2.3.5 =
+* Added support for the Cc add-on.
 
 = 1.2.3.4 =
 * Added support for the Reply-To add-on.

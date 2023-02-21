@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: Gmail SMTP
-Version: 1.2.3.4
+Version: 1.2.3.5
 Plugin URI: https://wphowto.net/gmail-smtp-plugin-for-wordpress-1341
 Author: naa986
 Author URI: https://wphowto.net/
@@ -16,7 +16,7 @@ if (!defined('ABSPATH')){
 
 class GMAIL_SMTP {
     
-    var $plugin_version = '1.2.3.4';
+    var $plugin_version = '1.2.3.5';
     var $phpmailer_version = '6.6.5';
     var $google_api_client_version = '2.2.0';
     var $plugin_url;
@@ -924,6 +924,18 @@ function gmail_smtp_pre_wp_mail($null, $atts)
         $reply_to[] = $reply_to_address;
     }
     /*end of reply_to code */
+    /*cc code */
+    $gmailsmtp_cc = '';
+    $gmailsmtp_cc = apply_filters('gmailsmtp_cc', $gmailsmtp_cc);
+    if(isset($gmailsmtp_cc) && !empty($gmailsmtp_cc)){
+        $temp_cc_recipients = explode(",", $gmailsmtp_cc);
+        $cc = array();
+        foreach($temp_cc_recipients as $temp_cc_recipient){
+            $cc_recipient = trim($temp_cc_recipient);
+            $cc[] = $cc_recipient;
+        }        
+    }
+    /*end of cc code */
     // Set mail's subject and body.
     $phpmailer->Subject = $subject;
     $phpmailer->Body    = $message;

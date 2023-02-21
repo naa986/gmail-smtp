@@ -12,9 +12,17 @@ function gmail_smtp_display_addons()
         'name' => 'Reply-To',
         'thumbnail' => GMAIL_SMTP_URL.'/addons/images/gmail-smtp-reply-to.png',
         'description' => 'Set a Reply-To address for all outgoing email messages',
-        'page_url' => 'https://wphowto.net/gmail-smtp-plugin-for-wordpress-1341',
+        'page_url' => 'https://wphowto.net/?p=6756',
     );
     array_push($addons_data, $addon_1);
+    
+    $addon_2 = array(
+        'name' => 'Cc',
+        'thumbnail' => GMAIL_SMTP_URL.'/addons/images/gmail-smtp-cc.png',
+        'description' => 'Set a Cc recipient for all outgoing email messages',
+        'page_url' => 'https://wphowto.net/?p=6770',
+    );
+    array_push($addons_data, $addon_2);
     
     //Display the list
     foreach ($addons_data as $addon) {
