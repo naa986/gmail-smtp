@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: Gmail SMTP
-Version: 1.2.3.5
+Version: 1.2.3.6
 Plugin URI: https://wphowto.net/gmail-smtp-plugin-for-wordpress-1341
 Author: naa986
 Author URI: https://wphowto.net/
@@ -16,8 +16,8 @@ if (!defined('ABSPATH')){
 
 class GMAIL_SMTP {
     
-    var $plugin_version = '1.2.3.5';
-    var $phpmailer_version = '6.6.5';
+    var $plugin_version = '1.2.3.6';
+    var $phpmailer_version = '6.7';
     var $google_api_client_version = '2.2.0';
     var $plugin_url;
     var $plugin_path;
@@ -912,16 +912,15 @@ function gmail_smtp_pre_wp_mail($null, $atts)
             return false;
     }
     /*reply_to code */
-    $gmailsmtp_reply_to = array();
+    $gmailsmtp_reply_to = '';
     $gmailsmtp_reply_to = apply_filters('gmailsmtp_reply_to', $gmailsmtp_reply_to);
-    if(isset($gmailsmtp_reply_to['reply_to_email_address']) && is_email($gmailsmtp_reply_to['reply_to_email_address'])){
-        $reply_to_address = $gmailsmtp_reply_to['reply_to_email_address'];
-        if(isset($gmailsmtp_reply_to['reply_to_name']) && !empty($gmailsmtp_reply_to['reply_to_name'])){
-            $reply_to_name = $gmailsmtp_reply_to['reply_to_name'];
-            $reply_to_address = $reply_to_name.' <'.$reply_to_address.'>';
-        }
+    if(isset($gmailsmtp_reply_to) && !empty($gmailsmtp_reply_to)){
+        $temp_reply_to_addresses = explode(",", $gmailsmtp_reply_to);
         $reply_to = array();
-        $reply_to[] = $reply_to_address;
+        foreach($temp_reply_to_addresses as $temp_reply_to_address){
+            $reply_to_address = trim($temp_reply_to_address);
+            $reply_to[] = $reply_to_address;
+        }
     }
     /*end of reply_to code */
     /*cc code */
@@ -982,7 +981,7 @@ function gmail_smtp_pre_wp_mail($null, $atts)
 
     // Set Content-Type and charset.
 
-    // If we don't have a content-type from the input headers.
+    // If we don't have a Content-Type from the input headers.
     if ( ! isset( $content_type ) ) {
             $content_type = 'text/plain';
     }
@@ -1036,9 +1035,11 @@ function gmail_smtp_pre_wp_mail($null, $atts)
     }
 
     if ( isset( $attachments ) && ! empty( $attachments ) ) {
-            foreach ( $attachments as $attachment ) {
+            foreach ( $attachments as $filename => $attachment ) {
+                    $filename = is_string( $filename ) ? $filename : '';
+
                     try {
-                            $phpmailer->addAttachment( $attachment );
+                            $phpmailer->addAttachment( $attachment, $filename );
                     } catch ( PHPMailer\PHPMailer\Exception $e ) {
                             continue;
                     }
