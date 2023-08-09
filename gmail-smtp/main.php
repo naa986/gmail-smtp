@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: Gmail SMTP
-Version: 1.2.3.8
+Version: 1.2.3.9
 Plugin URI: https://wphowto.net/gmail-smtp-plugin-for-wordpress-1341
 Author: naa986
 Author URI: https://wphowto.net/
@@ -16,8 +16,8 @@ if (!defined('ABSPATH')){
 
 class GMAIL_SMTP {
     
-    var $plugin_version = '1.2.3.8';
-    var $phpmailer_version = '6.7';
+    var $plugin_version = '1.2.3.9';
+    var $phpmailer_version = '6.8.0';
     var $google_api_client_version = '2.2.0';
     var $plugin_url;
     var $plugin_path;
@@ -764,8 +764,10 @@ function gmail_smtp_pre_wp_mail($null, $atts)
             $headers = array();
     } else {
             if ( ! is_array( $headers ) ) {
-                    // Explode the headers out, so this function can take
-                    // both string headers and an array of headers.
+                    /*
+                     * Explode the headers out, so this function can take
+                     * both string headers and an array of headers.
+                     */
                     $tempheaders = explode( "\n", str_replace( "\r\n", "\n", $headers ) );
             } else {
                     $tempheaders = $headers;
@@ -776,7 +778,7 @@ function gmail_smtp_pre_wp_mail($null, $atts)
             if ( ! empty( $tempheaders ) ) {
                     // Iterate through the raw headers.
                     foreach ( (array) $tempheaders as $header ) {
-                            if ( strpos( $header, ':' ) === false ) {
+                            if ( ! str_contains( $header, ':' ) ) {
                                     if ( false !== stripos( $header, 'boundary=' ) ) {
                                             $parts    = preg_split( '/boundary=/i', trim( $header ) );
                                             $boundary = trim( str_replace( array( "'", '"' ), '', $parts[1] ) );
@@ -812,7 +814,7 @@ function gmail_smtp_pre_wp_mail($null, $atts)
                                             }
                                             break;
                                     case 'content-type':
-                                            if ( strpos( $content, ';' ) !== false ) {
+                                            if ( str_contains( $content, ';' ) ) {
                                                     list( $type, $charset_content ) = explode( ';', $content );
                                                     $content_type                   = trim( $type );
                                                     if ( false !== stripos( $charset_content, 'charset=' ) ) {
@@ -873,7 +875,7 @@ function gmail_smtp_pre_wp_mail($null, $atts)
             $from_email = 'wordpress@';
 
             if ( null !== $sitename ) {
-                    if ( 'www.' === substr( $sitename, 0, 4 ) ) {
+                    if ( str_starts_with( $sitename, 'www.' ) ) {
                             $sitename = substr( $sitename, 4 );
                     }
 
@@ -953,7 +955,7 @@ function gmail_smtp_pre_wp_mail($null, $atts)
                             $recipient_name = '';
 
                             if ( preg_match( '/(.*)<(.+)>/', $address, $matches ) ) {
-                                    if ( count( $matches ) == 3 ) {
+                                    if ( count( $matches ) === 3 ) {
                                             $recipient_name = $matches[1];
                                             $address        = $matches[2];
                                     }
