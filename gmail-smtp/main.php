@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: Gmail SMTP
-Version: 1.2.3.9
+Version: 1.2.3.10
 Plugin URI: https://wphowto.net/gmail-smtp-plugin-for-wordpress-1341
 Author: naa986
 Author URI: https://wphowto.net/
@@ -16,7 +16,7 @@ if (!defined('ABSPATH')){
 
 class GMAIL_SMTP {
     
-    var $plugin_version = '1.2.3.9';
+    var $plugin_version = '1.2.3.10';
     var $phpmailer_version = '6.8.0';
     var $google_api_client_version = '2.2.0';
     var $plugin_url;
@@ -48,7 +48,6 @@ class GMAIL_SMTP {
 
     function loader_operations() {
         if (is_admin()) {
-            add_filter('plugin_action_links', array($this, 'add_plugin_action_links'), 10, 2);
             include_once('addons/gmail-smtp-addons.php');
         }
         add_action('plugins_loaded', array($this, 'plugins_loaded_handler'));
@@ -71,6 +70,9 @@ class GMAIL_SMTP {
     
     function plugins_loaded_handler()
     {
+        if(is_admin() && current_user_can('manage_options')){
+            add_filter('plugin_action_links', array($this, 'add_plugin_action_links'), 10, 2);
+        }
         load_plugin_textdomain('gmail-smtp', false, dirname( plugin_basename( __FILE__ ) ) . '/languages/'); 
     }
 
