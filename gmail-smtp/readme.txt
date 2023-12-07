@@ -15,9 +15,9 @@ Connect to Gmail SMTP server to automatically send email from your WordPress sit
 
 [Gmail SMTP](https://wphowto.net/gmail-smtp-plugin-for-wordpress-1341) plugin allows you to authenticate with your Gmail account to send email via Gmail SMTP server.
 
-Most shared hosting servers have restrictions when it comes to email. Usually email will get blocked or missing for no reason. Sometimes it will get blocked when your website reaches the daily limit of outgoing email. This plugin can bypass this issue by routing the email through Gmail's SMTP server.
-
 https://www.youtube.com/watch?v=_MCxcvfoGj4&rel=0
+
+Most shared hosting servers have restrictions when it comes to email. Usually email will get blocked or missing for no reason. Sometimes it will get blocked when your website reaches the daily limit of outgoing email. This plugin can bypass this issue by routing the email through Gmail's SMTP server.
 
 === Gmail SMTP Add-ons ===
 
