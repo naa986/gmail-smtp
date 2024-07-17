@@ -3,11 +3,11 @@ Contributors: naa986
 Donate link: https://wphowto.net/
 Tags: smtp, gmail, mail, email, oauth
 Requires at least: 6.5
-Tested up to: 6.5
+Tested up to: 6.6
 Requires PHP: 5.6
 Stable tag: 1.2.3.12
 License: GPLv2 or later
-License URI: http://www.gnu.org/licenses/gpl-2.0.html
+License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
 Connect to Gmail SMTP server to automatically send email from your WordPress site. Configure wp_mail() to use SMTP with OAuth 2.0 authentication.
 
