@@ -1,4 +1,4 @@
-=== Gmail SMTP ===
+=== Gmail SMTP - WordPress SMTP Plugin for Gmail ===
 Contributors: naa986
 Donate link: https://wphowto.net/
 Tags: smtp, gmail, mail, email, oauth
