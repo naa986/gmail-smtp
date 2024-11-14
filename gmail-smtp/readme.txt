@@ -1,11 +1,11 @@
-=== Gmail SMTP - WordPress SMTP Plugin for Gmail ===
+=== Gmail SMTP ===
 Contributors: naa986
 Donate link: https://wphowto.net/
 Tags: smtp, gmail, mail, email, oauth
 Requires at least: 6.5
-Tested up to: 6.6
+Tested up to: 6.7
 Requires PHP: 5.6
-Stable tag: 1.2.3.12
+Stable tag: 1.2.3.13
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -125,6 +125,9 @@ For screenshots please visit the [Gmail SMTP](https://wphowto.net/gmail-smtp-plu
 none
 
 == Changelog ==
+
+= 1.2.3.13 =
+* Compatibility update for WordPress 6.7.
 
 = 1.2.3.12 =
 * Compatibility update for WordPress 6.5.
