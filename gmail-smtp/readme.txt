@@ -5,7 +5,7 @@ Tags: smtp, gmail, mail, email, oauth
 Requires at least: 6.5
 Tested up to: 6.8
 Requires PHP: 5.6
-Stable tag: 1.2.3.14
+Stable tag: 1.2.3.15
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -23,6 +23,7 @@ Most shared hosting servers have restrictions when it comes to email. Usually em
 
 * [Reply-To](https://wphowto.net/how-to-add-a-reply-to-address-in-the-gmail-smtp-wordpress-plugin-6756)
 * [Cc](https://wphowto.net/gmail-smtp-plugin-cc-configuration-6770)
+* [Email Logger](https://wphowto.net/gmail-smtp-email-logger-7336)
 
 === Gmail SMTP Benefits ===
 
@@ -125,6 +126,9 @@ For screenshots please visit the [Gmail SMTP](https://wphowto.net/gmail-smtp-plu
 none
 
 == Changelog ==
+
+= 1.2.3.15 =
+* Fixed an issue with exceptions.
 
 = 1.2.3.14 =
 * Compatibility update for WordPress 6.8.

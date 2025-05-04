@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: Gmail SMTP
-Version: 1.2.3.14
+Version: 1.2.3.15
 Plugin URI: https://wphowto.net/gmail-smtp-plugin-for-wordpress-1341
 Author: naa986
 Author URI: https://wphowto.net/
@@ -16,7 +16,7 @@ if (!defined('ABSPATH')){
 
 class GMAIL_SMTP {
     
-    var $plugin_version = '1.2.3.14';
+    var $plugin_version = '1.2.3.15';
     var $phpmailer_version = '6.9.3';
     var $google_api_client_version = '2.2.0';
     var $plugin_url;
@@ -702,7 +702,7 @@ function gmail_smtp_pre_wp_mail($null, $atts)
 
     $options = gmail_smtp_get_option();
 
-    $phpmailer = new PHPMailerOAuth; /* this must be the custom class we created */
+    $phpmailer = new PHPMailerOAuth( true ); /* this must be the custom class we created */
 
     // Tell PHPMailer to use SMTP
     $phpmailer->isSMTP();

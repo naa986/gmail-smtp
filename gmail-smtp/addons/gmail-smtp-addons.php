@@ -12,7 +12,7 @@ function gmail_smtp_display_addons()
         'name' => 'Reply-To',
         'thumbnail' => GMAIL_SMTP_URL.'/addons/images/gmail-smtp-reply-to.png',
         'description' => 'Set a Reply-To address for all outgoing email messages',
-        'page_url' => 'https://wphowto.net/?p=6756',
+        'page_url' => 'https://wphowto.net/how-to-add-a-reply-to-address-in-the-gmail-smtp-wordpress-plugin-6756',
     );
     array_push($addons_data, $addon_1);
     
@@ -20,9 +20,17 @@ function gmail_smtp_display_addons()
         'name' => 'Cc',
         'thumbnail' => GMAIL_SMTP_URL.'/addons/images/gmail-smtp-cc.png',
         'description' => 'Set a Cc recipient for all outgoing email messages',
-        'page_url' => 'https://wphowto.net/?p=6770',
+        'page_url' => 'https://wphowto.net/gmail-smtp-plugin-cc-configuration-6770',
     );
     array_push($addons_data, $addon_2);
+    
+    $addon_3 = array(
+        'name' => 'Email Logger',
+        'thumbnail' => GMAIL_SMTP_URL.'/addons/images/gmail-smtp-email-logger.png',
+        'description' => 'Log and view all email messages',
+        'page_url' => 'https://wphowto.net/gmail-smtp-email-logger-7336',
+    );
+    array_push($addons_data, $addon_3);
     
     //Display the list
     foreach ($addons_data as $addon) {

@@ -31,7 +31,15 @@ class PHPMailerOAuth extends \PHPMailer\PHPMailer\PHPMailer {
      * @access protected
      */
     protected $oauth = null;
-
+    
+    /**
+     * Constructor.
+     * @param bool $exceptions Optional. Whether to throw exceptions for errors. Default false.
+     */
+    public function __construct( $exceptions = false ) {
+        parent::__construct( $exceptions );
+    }
+    
     /**
      * Get an OAuth instance to use.
      * @return OAuth
