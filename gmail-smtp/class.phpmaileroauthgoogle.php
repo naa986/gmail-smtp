@@ -39,9 +39,13 @@ class GmailXOAuth2 {
         $redirect_url = admin_url("options-general.php?page=gmail-smtp-settings&action=oauth_grant");
         $google_client->setRedirectUri($redirect_url);
         //$google_client->setAuthConfigFile ( APP_CREDENTIALS );
-                /* Its a must to request for 'offile access type' */
+        /* Its a must to request for 'offile access type' */
         $google_client->setAccessType ( 'offline' );
-
+        /*
+        This forces the approval prompt for other sites when one site has already been given permission under the same project.
+        Without this the approval prompt does not appear and no refresh token is returned.
+        */
+        $google_client->setApprovalPrompt ( 'force' );
         return $google_client;
 
     }
