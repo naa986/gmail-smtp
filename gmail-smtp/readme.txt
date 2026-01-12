@@ -2,10 +2,10 @@
 Contributors: naa986
 Donate link: https://wphowto.net/
 Tags: smtp, gmail, mail, email, oauth
-Requires at least: 6.5
-Tested up to: 6.8
+Requires at least: 6.9
+Tested up to: 6.9
 Requires PHP: 5.6
-Stable tag: 1.2.3.16
+Stable tag: 1.2.3.17
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -126,6 +126,9 @@ For screenshots please visit the [Gmail SMTP](https://wphowto.net/gmail-smtp-plu
 none
 
 == Changelog ==
+
+= 1.2.3.17 =
+* Compatibility update for WordPress 6.9.
 
 = 1.2.3.16 =
 * Force the approval prompt during authorization.
