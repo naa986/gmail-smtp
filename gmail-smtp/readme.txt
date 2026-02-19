@@ -5,7 +5,7 @@ Tags: smtp, gmail, mail, email, oauth
 Requires at least: 6.9
 Tested up to: 6.9
 Requires PHP: 5.6
-Stable tag: 1.2.3.17
+Stable tag: 1.2.3.18
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -126,6 +126,9 @@ For screenshots please visit the [Gmail SMTP](https://wphowto.net/gmail-smtp-plu
 none
 
 == Changelog ==
+
+= 1.2.3.18 =
+* Added security for debug output.
 
 = 1.2.3.17 =
 * Compatibility update for WordPress 6.9.
