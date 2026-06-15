@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: Gmail SMTP
-Version: 1.2.3.19
+Version: 1.2.3.20
 Requires at least: 7.0
 Plugin URI: https://wphowto.net/gmail-smtp-plugin-for-wordpress-1341
 Author: naa986
@@ -17,7 +17,7 @@ if (!defined('ABSPATH')){
 
 class GMAIL_SMTP {
     
-    var $plugin_version = '1.2.3.19';
+    var $plugin_version = '1.2.3.20';
     var $phpmailer_version = '7.0.2';
     var $google_api_client_version = '2.2.0';
     var $plugin_url;
@@ -213,6 +213,10 @@ class GMAIL_SMTP {
     
     function test_email_settings(){
         if(isset($_POST['gmail_smtp_send_test_email'])){
+            $nonce = $_REQUEST['_wpnonce'];
+            if (!wp_verify_nonce($nonce, 'gmail_smtp_test_email')) {
+                wp_die('Error! Nonce Security Check Failed! please send the test email again.');
+            }
             $to = '';
             if(isset($_POST['gmail_smtp_to_email']) && !empty($_POST['gmail_smtp_to_email'])){
                 $to = sanitize_email($_POST['gmail_smtp_to_email']);
