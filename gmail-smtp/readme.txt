@@ -4,8 +4,8 @@ Donate link: https://wphowto.net/
 Tags: smtp, gmail, mail, email, oauth
 Requires at least: 7.0
 Tested up to: 7.0
-Requires PHP: 5.6
-Stable tag: 1.2.3.20
+Requires PHP: 8.1
+Stable tag: 1.2.3.21
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -126,6 +126,9 @@ For screenshots please visit the [Gmail SMTP](https://wphowto.net/gmail-smtp-plu
 none
 
 == Changelog ==
+
+= 1.2.3.21 =
+* Updated Google API Client library to v2.19.4.
 
 = 1.2.3.20 =
 * Fixed an issue with sending a test email.
