@@ -123,7 +123,7 @@ class PHPMailerOAuth extends \PHPMailer\PHPMailer\PHPMailer {
             }
             $host = $hostinfo[3];
             $port = $this->Port;
-            $tport = (integer)$hostinfo[4];
+            $tport = (int)$hostinfo[4];
             if ($tport > 0 and $tport < 65536) {
                 $port = $tport;
             }

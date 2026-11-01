@@ -5,7 +5,7 @@ Tags: smtp, gmail, mail, email, oauth
 Requires at least: 7.0
 Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 1.2.3.22
+Stable tag: 1.2.3.23
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -14,8 +14,6 @@ Connect to Gmail SMTP server to automatically send email from your WordPress sit
 == Description ==
 
 [Gmail SMTP](https://wphowto.net/gmail-smtp-plugin-for-wordpress-1341) plugin allows you to authenticate with your Gmail account to send email via Gmail SMTP server.
-
-https://www.youtube.com/watch?v=_MCxcvfoGj4&rel=0
 
 Most shared hosting servers have restrictions when it comes to email. Usually email will get blocked or missing for no reason. Sometimes it will get blocked when your website reaches the daily limit of outgoing email. This plugin can bypass this issue by routing the email through Gmail's SMTP server.
 
@@ -30,7 +28,7 @@ Most shared hosting servers have restrictions when it comes to email. Usually em
 * Gmail SMTP plugin is not like most SMTP plugins. It uses the OAuth 2.0 protocol to authorize access to the Gmail API - which means a more secure login system and users won't have to enter any username or password.
 * Gmail SMTP plugin uses PHPMailer - a very popular library used for sending email through PHP's mail function. This libary is also used in the core WordPress to send email.
 * Gmail SMTP plugin utilizes "wp_mail" (A function used by WordPress to send email) instead of completely overriding it. This way you still get all the benefits of the default mail function. 
-* You no longer need to enable **Allow less secure apps** on your gmail account to fix SMTP connection issue. This issue became prominent from December 2014, when Google started imposing XOAUTH2 authentication (based on OAuth2) to access their apps. This issue still affects almost all the SMTP plugins because they authenticate via username and password.
+* You no longer need to enable **Allow less secure apps** on your gmail account to fix SMTP connection issue.
 
 === How OAuth 2.0 Authorization Works ===
 
@@ -126,6 +124,9 @@ For screenshots please visit the [Gmail SMTP](https://wphowto.net/gmail-smtp-plu
 none
 
 == Changelog ==
+
+= 1.2.3.23 =
+* Fixed some warning notices related to PHP 8.5.
 
 = 1.2.3.22 =
 * Fixed an issue which caused empty XOAUTH2 bearer.

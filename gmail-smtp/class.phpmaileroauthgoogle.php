@@ -190,7 +190,9 @@ class GmailXOAuth2 {
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
 
         $response = curl_exec($curl);
-        curl_close($curl);
+        if (defined('PHP_VERSION_ID') && PHP_VERSION_ID < 80500) {
+            curl_close($curl);
+        }
 
         $response = json_decode($response, true);
 
